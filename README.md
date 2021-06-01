@@ -20,15 +20,12 @@ make install
 
 * Others
 
-```
+```bash
 make uninstall
 make clean
 make distclean
 ```
-
-
 ## Requirements
 
 Plesase see uldaq for required packages. For macOS, I use `port` instead of `brew`.
-
 
