@@ -1,12 +1,4 @@
-ifeq ($(UNAME_S),Darwin)
 INSTALL_LOCATION:=$(TOP)
-OS_FLAGS:="env CPPFLAGS='-I/opt/local/include' LDFLAGS='-L/opt/local/lib'"
-endif
-
-ifeq ($(UNAME_S),Linux)
-INSTALL_LOCATION:=$(TOP)
-OS_FLAGS:=
-endif
 
 # These allow developers to override the CONFIG_SITE variable
 # settings without having to modify the configure/CONFIG_SITE
