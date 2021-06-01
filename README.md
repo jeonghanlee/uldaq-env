@@ -6,7 +6,7 @@
 MCC Universal Library for Linux (uldaq) Configuration Environmemnt, and its customized applicaton.
 
 ## About
-This repository help to build the uldaq package and its customized applicatino consistently on Linux and macOS.
+This repository helps to build the uldaq package and its customized application consistently on Linux and macOS.
 
 ## uldaq commands
 
