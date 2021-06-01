@@ -1,5 +1,5 @@
 
-APPNAME:=env-template
+APPNAME:=uldaq
 
 ## Where the Source repository SRC_URL/SRC_NAME
 ##
@@ -8,11 +8,11 @@ SRC_NAME:=${APPNAME}
 
 
 ## Which the source tag / branch / hash id would like to use
-## 2020-04-21
-SRC_TAG:=master
+## 
+SRC_TAG:=tags/v1.2.0
 
 ## Placeholder for the site-specific version control 
-SRC_VERSION:=master
+SRC_VERSION:=1.2.0
 
 
 -include $(TOP)/../RELEASE.local
