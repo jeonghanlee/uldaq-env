@@ -1,0 +1,21 @@
+
+name: Build Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - run: sudo apt install make gcc g++ libusb-1.0.-0-dev autoconf autotools-dev
+    - run: make vars
+    - run: make init
+    - run: make all
+
