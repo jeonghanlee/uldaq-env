@@ -18,6 +18,8 @@ make build
 make install
 ```
 
+Note that `make install` will call `make install-exec` in the original `uldaq` makefile rule. If one would like to install `udev.rule`, please consult `Makefile` in `SRC_PATH`.
+
 * Others
 
 ```bash
