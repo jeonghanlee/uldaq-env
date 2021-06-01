@@ -44,11 +44,10 @@ build:
 ## Copy the site specific files into sources
 conf:
 	$(QUIET)cd $(SRC_PATH) && autoreconf -i -v -f . 
- 	$(QUIET)cd $(SRC_PATH) && "$(OS_FLAGS)" ./configure --prefix="$(INSTALL_LOCATION)"
+	$(QUIET)cd $(SRC_PATH) && "$(OS_FLAGS)" ./configure --prefix="$(INSTALL_LOCATION)"
 
 all: conf build install
 
 doc:
 	$(QUIET) cd $(SRC_PATH)/doc && (cat Doxyfile; echo "GENERATE_DOCBOOK = YES") | doxygen -
-
 
