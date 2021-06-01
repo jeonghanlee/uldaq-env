@@ -14,7 +14,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - run: sudo apt install make gcc g++ libusb-1.0.-0-dev autoconf autotools-dev
+    - run: sudo apt install make gcc g++ libusb-1.0-0-dev autoconf autotools-dev
     - run: make vars
     - run: make init
     - run: sudo make all
