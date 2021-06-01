@@ -7,7 +7,7 @@ This repository help to build the uldaq package and its customized applicatino c
 
 ## uldaq commands
 
-By default, everyhing will be within `$(TOP)` path. 
+By default, everyhing will be within `$(TOP)` path.
 
 * Build
 
@@ -25,7 +25,7 @@ make uninstall
 make clean
 make distclean
 ```
+
 ## Requirements
 
 Plesase see uldaq for required packages. For macOS, I use `port` instead of `brew`.
-
