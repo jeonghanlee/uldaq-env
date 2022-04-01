@@ -1,18 +1,16 @@
 
 APPNAME:=uldaq
 
-## Where the Source repository SRC_URL/SRC_NAME
-##
-SRC_URL:=https://github.com/jeonghanlee
+##- Where the Source repository SRC_URL/SRC_NAME
+SRC_URL:=https://github.com/mccdaq
 SRC_NAME:=${APPNAME}
 
 
-## Which the source tag / branch / hash id would like to use
-## 
-SRC_TAG:=tags/v1.2.0
+##- Which the source tag / branch / hash id would like to use
+SRC_TAG:=tags/v1.2.1
 
-## Placeholder for the site-specific version control 
-SRC_VERSION:=1.2.0
+##- Placeholder for the site-specific version control 
+SRC_VERSION:=1.2.1
 
 
 -include $(TOP)/../RELEASE.local

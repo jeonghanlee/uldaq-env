@@ -49,3 +49,4 @@ auto_positions.sav*
 env-template/
 *.swp
 *share/
+.DS_Store
