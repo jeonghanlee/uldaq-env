@@ -3,7 +3,14 @@
 [![Build Test](https://github.com/jeonghanlee/uldaq-env/actions/workflows/build.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/build.yml)
 [![Linter Run](https://github.com/jeonghanlee/uldaq-env/actions/workflows/linter.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/linter.yml)
 
-MCC Universal Library for Linux (uldaq) Configuration Environmemnt, and its customized applicaton.
+MCC Universal Library for Linux (uldaq) Configuration Environment, and its customized application.
+
+* https://github.com/mccdaq/uldaq
+* required packages
+
+```bash
+apt install autoconf libtool libusb-1.0-0.dev
+```
 
 ## About
 This repository helps to build the uldaq package and its customized application consistently on Linux and macOS.
