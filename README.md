@@ -32,7 +32,7 @@ make build
 make install
 ```
 
-Note that `make install` will call `make install-exec` in the original `uldaq` makefile rule and call `make install-includeHEADER' in `SRC_PATH/src`. If one would like to install `udev.rule`, please consult `Makefile` in `SRC_PATH`.
+Note that `make install` will call `make install-exec` in the original `uldaq` makefile rule and call `make install-includeHEADER` in `SRC_PATH/src`. If one would like to install `udev.rule`, please consult `Makefile` in `SRC_PATH`.
 
 * Others
 
