@@ -6,6 +6,18 @@ uninstall: src_uninstall
 
 clean: src_clean
 
+## Copy the site specific files into sources
+ifeq ($(UNAME_S),Darwin)
+conf:
+	cd $(SRC_PATH) && autoreconf -i -v -f  && env CPPFLAGS='-I/opt/local/include' LDFLAGS='-L/opt/local/lib' ./configure --prefix="$(INSTALL_LOCATION)"
+endif
+
+ifeq ($(UNAME_S),Linux)
+conf:
+	cd $(SRC_PATH) && autoreconf -i -v -f  && ./configure --prefix="$(INSTALL_LOCATION)"
+endif
+
+
 src_conf:
 	$(QUIET) echo "INSTALL_LOCATION:=/usr/local" > $(TOP)/configure/CONFIG_SITE.local 
 	cat -b $(TOP)/configure/CONFIG_SITE.local 
