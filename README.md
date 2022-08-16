@@ -5,8 +5,8 @@
 
 MCC Universal Library for Linux (uldaq) Configuration Environment, and its customized application.
 
-* https://github.com/mccdaq/uldaq
-* required packages
+* The source codes are located in <https://github.com/mccdaq/uldaq/>
+* Required packages (Debian and its variants) as follows
 
 ```bash
 apt install autoconf libtool libusb-1.0-0-dev
