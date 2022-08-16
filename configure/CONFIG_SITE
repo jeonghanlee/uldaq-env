@@ -1,4 +1,4 @@
-INSTALL_LOCATION:=$(TOP)
+INSTALL_LOCATION=$(TOP)
 
 # These allow developers to override the CONFIG_SITE variable
 # settings without having to modify the configure/CONFIG_SITE
