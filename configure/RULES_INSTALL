@@ -7,7 +7,8 @@ uninstall: src_uninstall
 clean: src_clean
 
 src_conf:
-	$(QUIET) echo "INSTALL_LOCATION=/usr/local" > $(TOP)/configure/CONFIG_SITE.local 
+	$(QUIET) echo "INSTALL_LOCATION:=/usr/local" > $(TOP)/configure/CONFIG_SITE.local 
+	cat -b $(TOP)/configure/CONFIG_SITE.local 
 
 src_install:
 	$(QUIET) make -C $(SRC_PATH) install-exec 

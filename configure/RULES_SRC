@@ -44,12 +44,12 @@ build:
 ## Copy the site specific files into sources
 ifeq ($(UNAME_S),Darwin)
 conf:
-	$(QUIET)cd $(SRC_PATH) && autoreconf -i -v -f  && env CPPFLAGS='-I/opt/local/include' LDFLAGS='-L/opt/local/lib' ./configure --prefix="$(INSTALL_LOCATION)"
+	cd $(SRC_PATH) && autoreconf -i -v -f  && env CPPFLAGS='-I/opt/local/include' LDFLAGS='-L/opt/local/lib' ./configure --prefix="$(INSTALL_LOCATION)"
 endif
 
 ifeq ($(UNAME_S),Linux)
 conf:
-	$(QUIET)cd $(SRC_PATH) && autoreconf -i -v -f  && ./configure --prefix="$(INSTALL_LOCATION)"
+	cd $(SRC_PATH) && autoreconf -i -v -f  && ./configure --prefix="$(INSTALL_LOCATION)"
 endif
 
 
