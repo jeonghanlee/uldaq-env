@@ -9,7 +9,7 @@ MCC Universal Library for Linux (uldaq) Configuration Environment, and its custo
 * required packages
 
 ```bash
-apt install autoconf libtool libusb-1.0-0.dev
+apt install autoconf libtool libusb-1.0-0-dev
 ```
 
 ## About
@@ -17,7 +17,11 @@ This repository helps to build the uldaq package and its customized application 
 
 ## uldaq commands
 
-By default, everyhing will be within `$(TOP)` path.
+By default, everything will be within `$(TOP)` path. In case, one would like to install them in a host system, for example, `/usr/local`. One can define it via
+
+```bash
+echo "INSTALL_LOCATION=/usr/local" > configure/CONFIG_SITE.local
+```
 
 * Build
 
@@ -28,7 +32,7 @@ make build
 make install
 ```
 
-Note that `make install` will call `make install-exec` in the original `uldaq` makefile rule. If one would like to install `udev.rule`, please consult `Makefile` in `SRC_PATH`.
+Note that `make install` will call `make install-exec` in the original `uldaq` makefile rule and call `make install-includeHEADER' in `SRC_PATH/src`. If one would like to install `udev.rule`, please consult `Makefile` in `SRC_PATH`.
 
 * Others
 
@@ -40,4 +44,4 @@ make distclean
 
 ## Requirements
 
-Plesase see uldaq for required packages. For macOS, I use `port` instead of `brew`.
+Please see uldaq for required packages. For macOS, I use `port` instead of `brew`.
