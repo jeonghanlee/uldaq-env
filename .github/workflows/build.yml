@@ -16,6 +16,5 @@ jobs:
     - uses: actions/checkout@v2
     - run: sudo apt install make gcc g++ libusb-1.0-0-dev autoconf autotools-dev
     - run: make vars
-    - run: make init
-    - run: make all
+    - run: make github
 

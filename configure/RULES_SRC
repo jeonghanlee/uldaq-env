@@ -35,7 +35,7 @@ distclean:
 	$(call distclean, $(SRC_PATH))
         
 
-.PHONY: build conf
+.PHONY: build conf all github doc
 
 ## Build Source
 build:
@@ -54,6 +54,8 @@ endif
 
 
 all: conf build install
+
+github: init src_conf conf build install
 
 doc:
 	$(QUIET) cd $(SRC_PATH)/doc && (cat Doxyfile; echo "GENERATE_DOCBOOK = YES") | doxygen -
