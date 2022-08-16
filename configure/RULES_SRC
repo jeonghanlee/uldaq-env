@@ -27,7 +27,7 @@ default: help
 
 ## Clone Source
 init:
-	$(call gitclone,$(SRC_GITURL),$(SRC_PATH),$(SRC_TAG))
+	$(call gitclone2,$(SRC_GITURL),$(SRC_PATH),$(SRC_TAG))
 
 deinit: distclean
 ## Clean Source
