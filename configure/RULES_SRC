@@ -43,7 +43,7 @@ build:
 
 all: conf build install
 
-github: init src_conf conf build install
+github: init conf build install
 
 doc:
 	$(QUIET) cd $(SRC_PATH)/doc && (cat Doxyfile; echo "GENERATE_DOCBOOK = YES") | doxygen -

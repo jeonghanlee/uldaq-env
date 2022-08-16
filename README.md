@@ -17,10 +17,10 @@ This repository helps to build the uldaq package and its customized application 
 
 ## uldaq commands
 
-By default, everything will be within `$(TOP)` path. In case, one would like to install them in a host system, for example, `/usr/local`. One can define it via
+By default, everything will be within `/usr/local` path. It can be customized via
 
 ```bash
-echo "INSTALL_LOCATION=/usr/local" > configure/CONFIG_SITE.local
+echo "INSTALL_LOCATION=where...." > configure/CONFIG_SITE.local
 ```
 
 * Build
