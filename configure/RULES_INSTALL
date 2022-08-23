@@ -15,6 +15,9 @@ endif
 ifeq ($(UNAME_S),Linux)
 conf:
 	cd $(SRC_PATH) && autoreconf -i -v -f  && ./configure --prefix="$(INSTALL_LOCATION)"
+
+debugconf:
+	cd $(SRC_PATH) && autoreconf -i -v -f  && ./configure --prefix="$(INSTALL_LOCATION)" --enable-debug
 endif
 
 
