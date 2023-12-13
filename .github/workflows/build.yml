@@ -21,9 +21,11 @@ jobs:
           apt install -y make gcc g++ libusb-1.0-0-dev autoconf autotools-dev git
       - name: Installation
         run: |
-          make github
-          make vars
-      - name: EPICS Environment Check
+          make init
+          make conf
+          make build
+          make install
+      - name: Environment Check
         run: |
           make vars
           make exist
