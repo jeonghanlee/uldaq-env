@@ -3,7 +3,7 @@ name: Debian 12
 on:
   push:
     branches: [master]
-    paths-ignores:
+    paths-ignore:
       - '**.md'
       - 'docs/**'
   pull_request:
@@ -18,8 +18,8 @@ jobs:
       - name: Install required packages
         run: |
           apt update -y
-          apt install -y make gcc g++ libusb-1.0-0-dev autoconf autotools-dev
-      - name: installation
+          apt install -y make gcc g++ libusb-1.0-0-dev autoconf autotools-dev git
+      - name: Installation
         run: |
           make github
           make vars
