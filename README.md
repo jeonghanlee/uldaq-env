@@ -3,7 +3,7 @@
 [![Debian 12](https://github.com/jeonghanlee/uldaq-env/actions/workflows/debian12.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/debian12.yml)
 [![Rocky9](https://github.com/jeonghanlee/uldaq-env/actions/workflows/rocky9.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/rocky9.yml)
 
-MCC Universal Library for Linux (uldaq) Configuration Environment, and its customized application.
+MCC Universal Library for Linux (`uldaq`) Configuration Environment and its customized application.
 
 * The source codes are located in <https://github.com/mccdaq/uldaq/>
 * Required packages (Debian and its variants) as follows
@@ -13,9 +13,9 @@ apt install autoconf libtool libusb-1.0-0-dev
 ```
 
 ## About
-This repository helps to build the uldaq package and its customized application consistently on Linux and macOS.
+This repository helps to build the `uldaq` package and its customized application consistently on Linux and macOS.
 
-## uldaq commands
+## `uldaq` commands
 
 By default, everything will be within `/usr/local` path. It can be customized via
 
@@ -40,9 +40,6 @@ make install
 ```
 
 
-
-Note that `make install` will call `make install-exec` in the original `uldaq` makefile rule and call `make install-includeHEADER` in `SRC_PATH/src`. If one would like to install `udev.rule`, please consult `Makefile` in `SRC_PATH`.
-
 * Others
 
 ```bash
@@ -53,4 +50,4 @@ make distclean
 
 ## Requirements
 
-Please see uldaq for required packages. For macOS, I use `port` instead of `brew`.
+Please take a look at the `uldaq` for the required packages. For macOS, I use `port` instead of `brew`.
