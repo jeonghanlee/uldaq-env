@@ -1,21 +1,29 @@
-
-name: Build Test
+name: Debian 12
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
+    paths-ignores:
+      - '**.md'
+      - 'docs/**'
   pull_request:
-    branches: [ master ]
-
+    branches: [master]
 jobs:
-  build:
-
+  Debian12:
     runs-on: ubuntu-latest
-
+    container: debian:bookworm-slim
     steps:
-    - uses: actions/checkout@v3
-    - run: sudo apt install make gcc g++ libusb-1.0-0-dev autoconf autotools-dev
-    - run: make github
-    - run: make vars
-    - run: make exist
-
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: Install required packages
+        run: |
+          apt update -y
+          apt install -y make gcc g++ libusb-1.0-0-dev autoconf autotools-dev
+      - name: installation
+        run: |
+          make github
+          make vars
+      - name: EPICS Environment Check
+        run: |
+          make vars
+          make exist
