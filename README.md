@@ -1,7 +1,6 @@
 # ULDAQ Configuration Environment
 
 [![Build Test](https://github.com/jeonghanlee/uldaq-env/actions/workflows/build.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/build.yml)
-[![Linter Run](https://github.com/jeonghanlee/uldaq-env/actions/workflows/linter.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/linter.yml)
 
 MCC Universal Library for Linux (uldaq) Configuration Environment, and its customized application.
 
