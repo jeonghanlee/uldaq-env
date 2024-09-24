@@ -9,15 +9,15 @@ clean: src_clean
 ## Copy the site specific files into sources
 ifeq ($(UNAME_S),Darwin)
 conf:
-	cd $(SRC_PATH) && autoreconf -i -v -f  && env CPPFLAGS='-I/opt/local/include' LDFLAGS='-L/opt/local/lib' ./configure --prefix="$(INSTALL_LOCATION)"
+	cd $(SRC_PATH) && autoreconf -i -v -f  && env CPPFLAGS='-I/opt/homebrew/include' LDFLAGS='-L/opt/homebrew/lib' ./configure --prefix="$(INSTALL_LOCATION_ULDAQ)"
 endif
 
 ifeq ($(UNAME_S),Linux)
 conf:
-	cd $(SRC_PATH) && autoreconf -i -v -f  && ./configure --prefix="$(INSTALL_LOCATION)"
+	cd $(SRC_PATH) && autoreconf -i -v -f  && ./configure --prefix="$(INSTALL_LOCATION_ULDAQ)"
 
 debugconf:
-	cd $(SRC_PATH) && autoreconf -i -v -f  && ./configure --prefix="$(INSTALL_LOCATION)" --enable-debug
+	cd $(SRC_PATH) && autoreconf -i -v -f  && ./configure --prefix="$(INSTALL_LOCATION_ULDAQ)" --enable-debug
 endif
 
 

@@ -43,8 +43,12 @@ OS_VERSION:=$(strip $(shell grep -Po '^VERSION_ID=\K[^d].+' /etc/os-release | se
 OS_NAME:=$(strip $(shell grep -Po '^ID=\K[^S].+' /etc/os-release | sed 's/\"//g'))
 endif
 
+ifeq ($(strip $(OS_NAME)),)
+OS_VERSION:=unknownOS¶
+endif
 
 #
+INSTALL_LOCATION_ULDAQ:=$(strip $(INSTALL_LOCATION))/$(OS_NAME)-$(OS_VERSION)
 #
 #
 #
