@@ -53,7 +53,7 @@ endif
 ifeq "$(strip $(INSTALL_LOCATION))" "/usr/local"
 INSTALL_LOCATION_ULDAQ:=$(strip $(INSTALL_LOCATION))
 else
-INSTALL_LOCATION_ULDAQ:=$(strip $(INSTALL_LOCATION))/$(OS_NAME)-$(OS_VERSION)
+INSTALL_LOCATION_ULDAQ:=$(strip $(INSTALL_LOCATION))/$(OS_NAME)-$(OS_VERSION)/vendor/
 endif
 
 #
