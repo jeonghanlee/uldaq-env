@@ -6,7 +6,7 @@ INSTALL_DATA:=$(INSTALL) -m 644
 INSTALL_755:=$(INSTALL) -m 755
 #
 # make sure, there is no whitespace from user inputs.
-# IF INSTALL_LOCATIOIN/.. is not WRITABLE, SUDO and SUDOBASH should be used 
+# IF INSTALL_LOCATIOIN/.. is not WRITABLE, SUDO and SUDOBASH should be used
 # SUDO_INFO 1 : SUDO is needed (NOT writable)
 # SUDO_INFO 0 : SUDO is not needed
 # There is no simple way to detect whether SUDO is needed to create INSTALL_LOCATION"
@@ -46,15 +46,10 @@ OS_NAME:=$(strip $(shell grep -Po '^ID=\K[^S].+' /etc/os-release | sed 's/\"//g'
 endif
 
 ifeq ($(strip $(OS_NAME)),)
-OS_VERSION:=unknownOS¶
+OS_VERSION:=unknownOS
 endif
 
-#
-ifeq "$(strip $(INSTALL_LOCATION))" "/usr/local"
 INSTALL_LOCATION_ULDAQ:=$(strip $(INSTALL_LOCATION))
-else
-INSTALL_LOCATION_ULDAQ:=$(strip $(INSTALL_LOCATION))/$(OS_NAME)-$(OS_VERSION)/vendor/
-endif
 
 #
 #
