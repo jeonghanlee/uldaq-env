@@ -17,7 +17,7 @@ conf:
 	cd $(SRC_PATH) && autoreconf -i -v -f  && env LDFLAGS='-Wl,-rpath,\$$$$ORIGIN/.' ./configure --prefix="$(INSTALL_LOCATION_ULDAQ)"
 
 debugconf:
-	cd $(SRC_PATH) && autoreconf -i -v -f  && env LDFLAGS='-Wl,-rpath,\$$$$ORIGIN/.'./configure --prefix="$(INSTALL_LOCATION_ULDAQ)" --enable-debug
+	cd $(SRC_PATH) && autoreconf -i -v -f  && env LDFLAGS='-Wl,-rpath,\$$$$ORIGIN/.' ./configure --prefix="$(INSTALL_LOCATION_ULDAQ)" --enable-debug
 endif
 
 
