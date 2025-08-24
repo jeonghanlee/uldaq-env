@@ -1,6 +1,7 @@
 # ULDAQ Configuration Environment
 
 [![Debian 12](https://github.com/jeonghanlee/uldaq-env/actions/workflows/debian12.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/debian12.yml)
+[![Rocky8](https://github.com/jeonghanlee/uldaq-env/actions/workflows/rocky8.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/rocky8.yml)
 [![Rocky9](https://github.com/jeonghanlee/uldaq-env/actions/workflows/rocky9.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/rocky9.yml)
 
 MCC Universal Library for Linux (`uldaq`) Configuration Environment and its customized application.
