@@ -13,8 +13,12 @@ conf:
 endif
 
 ifeq ($(UNAME_S),Linux)
+.PHONY: conf.rocky8 conf.rocky10
+
 conf:
 	cd $(SRC_PATH) && autoreconf -i -v -f  && env LDFLAGS='-Wl,-rpath,\$$$$ORIGIN/.' ./configure --prefix="$(INSTALL_LOCATION_ULDAQ)"
+
+conf.rocky10: conf.rocky8
 
 conf.rocky8:
 	cd $(SRC_PATH) && autoreconf -i -v -f  && env LDFLAGS='-Wl,--enable-new-dtags -Wl,-rpath,\$$$$ORIGIN/.' ./configure --prefix="$(INSTALL_LOCATION_ULDAQ)"
