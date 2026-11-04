@@ -1,8 +1,12 @@
 # ULDAQ Configuration Environment
 
 [![Debian 12](https://github.com/jeonghanlee/uldaq-env/actions/workflows/debian12.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/debian12.yml)
+[![Debian 13](https://github.com/jeonghanlee/uldaq-env/actions/workflows/debian13.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/debian13.yml)
+[![Ubuntu 24.04](https://github.com/jeonghanlee/uldaq-env/actions/workflows/ubuntu24.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/ubuntu24.yml)
+[![Ubuntu 26.04](https://github.com/jeonghanlee/uldaq-env/actions/workflows/ubuntu26.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/ubuntu26.yml)
 [![Rocky8](https://github.com/jeonghanlee/uldaq-env/actions/workflows/rocky8.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/rocky8.yml)
 [![Rocky9](https://github.com/jeonghanlee/uldaq-env/actions/workflows/rocky9.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/rocky9.yml)
+[![Rocky10](https://github.com/jeonghanlee/uldaq-env/actions/workflows/rocky10.yml/badge.svg)](https://github.com/jeonghanlee/uldaq-env/actions/workflows/rocky10.yml)
 
 MCC Universal Library for Linux (`uldaq`) Configuration Environment and its customized application.
 

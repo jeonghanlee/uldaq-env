@@ -7,7 +7,7 @@ Canonical branch or ref: master
 Git upstream: origin/master
 Remote tracker: jeonghanlee/uldaq-env issues #1 and #2; no GitHub milestone
 
-Next session entry point: `docs/milestone-988b152.md`, G1: obtain commit and push authority for the verified changes, publish them, then observe GitHub Actions and execute M1 / T5 from the published revision before closing issues #1 and #2.
+Next session entry point: `docs/milestone-988b152.md`, M1 / T5: assess published-checkout and installed-library evidence against the distribution criterion, then synchronize issue #2 and prepare its closure. M2 is complete; issue #1 closed on 2026-11-04.
 
 ## Scope
 
@@ -21,9 +21,9 @@ Out of scope: EPICS-env vendor integration, measComp reconnect implementation, p
 
 | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
 | --- | --- | --- | --- | --- | --- | --- |
-| M1 | Distribute ULDAQ 1.2.2 with the TCP receive fix | Milestone | Blocked | No | D1, G1 | Local build and transport checks passed; publication, remote CI, and fresh published-checkout verification remain; [detail](#m1---distribute-uldaq-122-with-the-tcp-receive-fix) |
-| M2 | Respect installation prefix permissions | Milestone | Blocked | No | D2, G1 | All three Linux containers passed ownership and installation checks; publication and remote CI remain; [detail](#m2---respect-installation-prefix-permissions) |
-| G1 | Authorize repository publication | External gate | Open | No | | Separate commit and push authority for the reviewed changes; [detail](#g1---authorize-repository-publication) |
+| M1 | Distribute ULDAQ 1.2.2 with the TCP receive fix | Milestone | In progress | No | D1, G1 | Published in 0320f5e; required CI passed; distribution evidence review and issue closure remain; [detail](#m1---distribute-uldaq-122-with-the-tcp-receive-fix) |
+| M2 | Respect installation prefix permissions | Milestone | Complete | No | D2, G1 | Published fix and required CI satisfy acceptance; issue #1 body synchronized and closed on 2026-11-04; [detail](#m2---respect-installation-prefix-permissions) |
+| G1 | Authorize repository publication | External gate | Complete | No | | Commit and push authorized and completed on 2026-11-04; [detail](#g1---authorize-repository-publication) |
 
 ### Decisions
 
@@ -39,7 +39,7 @@ Out of scope: EPICS-env vendor integration, measComp reconnect implementation, p
 Origin: 988b152 / M1
 Identity History: none
 GitHub Issue: #2, https://github.com/jeonghanlee/uldaq-env/issues/2
-Status: Blocked
+Status: In progress
 
 ##### Summary
 
@@ -73,7 +73,7 @@ Out of scope: changes to `tools/prep-vendors.bash` in EPICS-env, measComp reconn
 ##### Dependencies And Decisions
 
 - D1 defines the assigned scope.
-- G1 blocks publication as of 2026-11-04; resume as In progress after commit and push authority is recorded.
+- G1 completed on 2026-11-04 after commit and push authorization; resumed as In progress. The implementation is published in 0320f5edecfaa16cf6ef75aaee122487f68aca12.
 - EPICS-env consumes the published uldaq-env revision after this work. Its vendor integration and real-device acceptance are tracked in jeonghanlee/EPICS-env#120 and do not establish completion of this repository's checks.
 - The functional regression requires the existing reconnect-capable measComp test fixture and real EPICS/asyn libraries. Record the exact fixture inputs and library identities with each run; simulate only the external TC32 UDP/TCP endpoint.
 
@@ -109,9 +109,9 @@ For T3, use isolated checkouts and installation prefixes. Exercise the documente
 | --- | --- | --- | --- | --- |
 | T1 | 2026-11-04 | Debian 12, Rocky 8.10, Rocky 9 local containers; Debian 13 host | Passed | Real `make init` resolved the expected upstream commit; [input identity](verification-uldaq-1.2.2.md#tested-input-identity). |
 | T2 | 2026-11-04 | Isolated upstream source on all three local container platforms | Passed | Exact correction, repeated apply, byte-exact revert/reapply, and missing/empty/incompatible patch refusal; [results](verification-uldaq-1.2.2.md#local-container-results). |
-| T3 | 2026-11-04 | Same three Linux CI images, executed locally | Local Passed; GitHub Actions Pending | 143 build checks per platform; separate configuration compatibility checks passed; [results and execution times](verification-uldaq-1.2.2.md#local-container-results). Remote workflows have not run for these changes. |
+| T3 | 2026-11-04 | Debian 12, Rocky 8.10, Rocky 9 local containers and GitHub Actions | Passed | 143 local build checks per platform; published revision 0320f5e passed all three remote build/install jobs; [published results](verification-uldaq-1.2.2.md#published-revision-and-github-actions). |
 | T4 | 2026-11-04 18:10 UTC | Debian 13; real EPICS Base 7.0.10, asyn 4.45.0 and measComp; isolated TC32 network fixture | Passed | Original installed library reproduced EOF value loss; corrected installed library passed 29/29 with normal IOC exit; [library and fixture identities](verification-uldaq-1.2.2.md#transport-results). |
-| T5 | Not run | Fresh published checkout | Pending | none |
+| T5 | 2026-11-04 | Published revision 0320f5e | Pending evidence review | CI checkout and build/install steps passed; assessment of published-checkout and installed-library evidence against this distribution criterion remains open. |
 
 The installed-library comparison above was executed for this implementation. It is separate from the earlier candidate results in jeonghanlee/EPICS-env#120 and does not establish publication, hardware acceptance, or downstream integration.
 
@@ -119,7 +119,8 @@ The installed-library comparison above was executed for this implementation. It 
 
 - Local verification is recorded in [ULDAQ 1.2.2 Verification](verification-uldaq-1.2.2.md).
 - 2026-11-04: implementation and maintainer-documentation review found no open corrective findings.
-- Repository commit, upstream landing evidence, remote CI, fresh published-checkout verification, and issue closure remain pending.
+- Published implementation: 0320f5edecfaa16cf6ef75aaee122487f68aca12. Debian 12, Rocky 8.10, and Rocky 9 GitHub Actions passed; [run links](verification-uldaq-1.2.2.md#published-revision-and-github-actions).
+- M1 / T5 evidence review and issue #2 body synchronization and closure remain pending.
 
 ##### GitHub Projection
 
@@ -129,14 +130,14 @@ GitHub Milestone: none
 Observed State: open
 Observed Labels: bug
 Observed Milestone: none
-Last Compared: 2026-11-04 18:29 UTC; remote updated at 2026-11-04T18:29:22Z. Body matches the verified candidate results; state is open, label is bug, assignee is jeonghanlee, and milestone is none. Recheck with `gh issue view 2 --repo jeonghanlee/uldaq-env`.
+Last Compared: 2026-11-04 21:16 UTC; remote updated at 2026-11-04T18:29:22Z. State is open, label is bug, assignee is jeonghanlee, and milestone is none. The remote body still describes an unpublished candidate; publication and CI results require synchronization. Recheck with `gh issue view 2 --repo jeonghanlee/uldaq-env`.
 
 #### M2 - Respect installation prefix permissions
 
 Origin: 988b152 / M2
 Identity History: none
 GitHub Issue: #1, https://github.com/jeonghanlee/uldaq-env/issues/1
-Status: Blocked
+Status: Complete
 
 ##### Summary
 
@@ -161,7 +162,7 @@ Out of scope: ownership repair of earlier installations, host sudo policy change
 ##### Dependencies And Decisions
 
 - D2 assigns this work. M1 and M2 share the build entry points but neither is a separate external gate for the other.
-- G1 blocks publication as of 2026-11-04; resume as In progress after commit and push authority is recorded.
+- G1 completed on 2026-11-04 after commit and push authorization; resumed as In progress. The implementation is published in 0320f5edecfaa16cf6ef75aaee122487f68aca12.
 - Test-only sudo policy and protected prefixes exist inside disposable containers, not on the host.
 
 ##### Implementation Plan
@@ -188,35 +189,36 @@ Superseded Plan Artifacts: none
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | 2026-11-04 | Debian 12, Rocky 8.10, Rocky 9 local containers | Passed | 15 checks per platform: real ordinary-user `github`, nested new prefix, repeated install, and recursive ownership; [results](verification-uldaq-1.2.2.md#local-container-results). |
-| T2 | 2026-11-04 | Same local containers; protected `/opt` prefix | Passed | 11 checks per platform: real elevated installation with root-owned artifacts and user-owned source/build tree; [results](verification-uldaq-1.2.2.md#local-container-results). |
-| T3 | 2026-11-04 | Same three Linux CI images, executed locally | Local Passed; GitHub Actions Pending | Shared M1 / T3 evidence: 143 build checks per platform. The literal-sudo mutation failed the real ordinary-user ownership assertion; [regression controls](verification-uldaq-1.2.2.md#regression-controls). |
+| T1 | 2026-11-04 | Debian 12, Rocky 8.10, Rocky 9 local containers and GitHub Actions | Passed | 15 local checks per platform; the real ordinary-user installation step also passed in each published CI job; [local results](verification-uldaq-1.2.2.md#local-container-results) and [CI results](verification-uldaq-1.2.2.md#published-revision-and-github-actions). |
+| T2 | 2026-11-04 | Same platforms; protected `/opt` prefix | Passed | 11 local checks per platform; the protected-prefix installation step also passed in each published CI job; [CI results](verification-uldaq-1.2.2.md#published-revision-and-github-actions). |
+| T3 | 2026-11-04 | Same three Linux CI images, executed locally and on GitHub Actions | Passed | 143 local build checks per platform; published revision 0320f5e passed all three remote build/install jobs. The literal-sudo mutation failed the real ownership assertion; [regression controls](verification-uldaq-1.2.2.md#regression-controls). |
 
 ##### Closure Evidence
 
 - Local verification is recorded in [ULDAQ 1.2.2 Verification](verification-uldaq-1.2.2.md).
 - 2026-11-04: implementation and maintainer-documentation review found no open corrective findings.
-- Repository commit, upstream landing evidence, remote CI, and issue closure remain pending.
+- Published implementation: 0320f5edecfaa16cf6ef75aaee122487f68aca12. All required build and installation steps passed on Debian 12, Rocky 8.10, and Rocky 9 GitHub Actions; [run links](verification-uldaq-1.2.2.md#published-revision-and-github-actions).
+- 2026-11-04 21:24 UTC: issue #1 body synchronized with all five acceptance items checked; [closure comment](https://github.com/jeonghanlee/uldaq-env/issues/1#issuecomment-6642478546) published. Remote state verified as closed with reason completed at 2026-11-04T21:24:31Z.
 
 ##### GitHub Projection
 
 Title: github target hard-codes sudo
 Labels: bug
 GitHub Milestone: none
-Observed State: open
+Observed State: closed
 Observed Labels: bug
 Observed Milestone: none
-Last Compared: 2026-11-04 18:29 UTC; remote updated at 2026-11-04T18:29:18Z. Body matches the verified candidate results; state is open, label is bug, assignee is jeonghanlee, and milestone is none. Recheck with `gh issue view 1 --repo jeonghanlee/uldaq-env`.
+Last Compared: 2026-11-04 21:24 UTC; remote updated at 2026-11-04T21:24:31Z. State is closed with reason completed, label is bug, assignee is jeonghanlee, and milestone is none. Remote body and closure comment match the prepared content. Recheck with `gh issue view 1 --repo jeonghanlee/uldaq-env`.
 
 #### G1 - Authorize repository publication
 
 Origin: 988b152 / G1
 GitHub Issue: none
-Status: Open
+Status: Complete
 
 ##### Summary
 
-The repository owner must provide the separate commit and push authority required by the repository Git workflow. This gate affects M1 and M2; it does not invalidate their completed local verification.
+The repository owner supplied separate commit and push authority on 2026-11-04. Publication of the reviewed implementation and the subsequent CI expansion completed under that authority.
 
 ##### Completion Criteria
 
@@ -226,11 +228,11 @@ The repository owner must provide the separate commit and push authority require
 
 | Observed At | Result | Evidence |
 | --- | --- | --- |
-| 2026-11-04 | Open | Implementation and issue work are authorized; separate commit and push delegation has not been recorded. |
+| 2026-11-04 | Complete | Separate commit and push authority recorded; 0320f5edecfaa16cf6ef75aaee122487f68aca12 and c54a7e7d453ebe795ef2e7aadd7e56e69146eeb3 are published on origin/master. |
 
 ##### Closure Evidence
 
-- none
+- 2026-11-04: both authorized publications completed. The remote master reference was verified as c54a7e7d453ebe795ef2e7aadd7e56e69146eeb3 after the CI expansion push.
 
 ## Backlog
 

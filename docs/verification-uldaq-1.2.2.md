@@ -1,8 +1,10 @@
 # ULDAQ 1.2.2 Verification
 
-Observed on 2026-11-04, x86-64 Linux. These results cover the working-tree
-inputs identified below. GitHub Actions execution and reproduction from a
-published immutable revision remain unverified until publication.
+Observed on 2026-11-04, x86-64 Linux. These results cover the build and test
+inputs identified below, published in revision
+0320f5edecfaa16cf6ef75aaee122487f68aca12. Its three required GitHub Actions
+jobs passed. Distribution acceptance for issue #2 still requires the
+published-checkout evidence review recorded in the milestone document.
 
 ## Source And Build Contract
 
@@ -46,6 +48,63 @@ was consumed by the transport comparison below. Separate real configure runs
 passed 14 checks for `debugconf` and `conf.rocky10`, including patch presence
 and preservation of `--enable-debug` and `--enable-new-dtags`, respectively.
 This alias check on Debian does not establish Rocky 10 platform support.
+
+### Additional CI Platforms
+
+The workflow shell steps for Debian 13, Ubuntu 24.04, Ubuntu 26.04, and
+Rocky Linux 10 also ran in local containers on 2026-11-04. Each run used
+the real source, configure, compiler, patch, and installation paths; each
+container command exited zero. The recorded workflow hashes match the
+files published in c54a7e7d453ebe795ef2e7aadd7e56e69146eeb3.
+
+| Platform | Container Image | Build | User | Protected |
+| --- | --- | --- | --- | --- |
+| Debian 13 | `debian:13-slim` | 143/143 | 15/15 | 11/11 |
+| Ubuntu 24.04 | `ubuntu:24.04` | 143/143 | 15/15 | 11/11 |
+| Ubuntu 26.04 | `ubuntu:26.04` | 143/143 | 15/15 | 11/11 |
+| Rocky Linux 10 | `rockylinux/rockylinux:10` | 143/143 | 15/15 | 11/11 |
+
+These 676 checks establish local build and installation coverage. They do
+not exercise GitHub checkout, artifact upload, or event filtering services.
+
+## Published Revision And GitHub Actions
+
+The source selection, required patch, ownership correction, build instructions,
+and verification evidence are published in
+[0320f5edecfaa16cf6ef75aaee122487f68aca12](https://github.com/jeonghanlee/uldaq-env/commit/0320f5edecfaa16cf6ef75aaee122487f68aca12).
+The following runs completed successfully, including checkout, root build,
+ordinary-user installation, protected-prefix installation, and evidence upload.
+
+| Platform | Published Revision | Result | Run |
+| --- | --- | --- | --- |
+| Debian 12 | 0320f5e | Passed | [GitHub Actions](https://github.com/jeonghanlee/uldaq-env/actions/runs/41903647406) |
+| Rocky Linux 8.10 | 0320f5e | Passed | [GitHub Actions](https://github.com/jeonghanlee/uldaq-env/actions/runs/41903647320) |
+| Rocky Linux 9 | 0320f5e | Passed | [GitHub Actions](https://github.com/jeonghanlee/uldaq-env/actions/runs/41903647572) |
+
+These results satisfy the publication and CI criteria for issue #1.
+Revision c54a7e7d453ebe795ef2e7aadd7e56e69146eeb3 expands CI to seven Linux
+platforms and updates checkout, artifact upload, and documentation-only event
+filters without changing the build/test inputs listed below. Its runs are
+separate from the three-platform verification above. All seven jobs completed
+successfully on 2026-11-04:
+
+| Platform | Published Revision | Result | Run |
+| --- | --- | --- | --- |
+| Debian 12 | c54a7e7 | Passed | [GitHub Actions](https://github.com/jeonghanlee/uldaq-env/actions/runs/41912974755) |
+| Debian 13 | c54a7e7 | Passed | [GitHub Actions](https://github.com/jeonghanlee/uldaq-env/actions/runs/41912975041) |
+| Ubuntu 24.04 | c54a7e7 | Passed | [GitHub Actions](https://github.com/jeonghanlee/uldaq-env/actions/runs/41912974872) |
+| Ubuntu 26.04 | c54a7e7 | Passed | [GitHub Actions](https://github.com/jeonghanlee/uldaq-env/actions/runs/41912975043) |
+| Rocky Linux 8.10 | c54a7e7 | Passed | [GitHub Actions](https://github.com/jeonghanlee/uldaq-env/actions/runs/41912974943) |
+| Rocky Linux 9 | c54a7e7 | Passed | [GitHub Actions](https://github.com/jeonghanlee/uldaq-env/actions/runs/41912974947) |
+| Rocky Linux 10 | c54a7e7 | Passed | [GitHub Actions](https://github.com/jeonghanlee/uldaq-env/actions/runs/41912974831) |
+
+The README badges link to each workflow's current result. These successful
+push runs do not directly test the exclusion of documentation-only events.
+
+For issue #2, the distribution criterion still needs an explicit assessment
+of the published-checkout evidence and its installed-library identity.
+Publication and successful CI alone are not recorded here as completion of
+that separate acceptance item.
 
 ## Transport Results
 
@@ -94,7 +153,7 @@ are regression controls and are not counted as successful product tests.
 
 ## Tested Input Identity
 
-All nine container runs recorded the same complete build/test input map;
+All nine baseline container runs recorded the same complete build/test input map;
 current bytes and membership were compared with that map. The suite excludes
 site-local overrides and Python bytecode. Command arguments, UTC start times,
 elapsed durations, native status, full logs, assertions, and installation
@@ -125,7 +184,8 @@ same evidence types as downloadable artifacts when GitHub Actions runs.
 ## Limits
 
 No production IOC, real-device power cycle, endurance, EXP-32, USB, Windows,
-macOS, or Rocky 10 hardware/platform acceptance is established here.
+macOS, or hardware acceptance is established here. Rocky Linux 10 coverage
+is limited to the recorded build and installation checks.
 The consumer fixture belongs to the separate integration work tracked in
-jeonghanlee/EPICS-env#120. Publication, remote CI, and a fresh published-checkout
-build remain required before distribution and issue closure.
+jeonghanlee/EPICS-env#120. Issue #1 has published build and installation
+evidence; issue #2 retains its separate distribution acceptance item.
