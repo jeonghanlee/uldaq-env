@@ -7,10 +7,10 @@ SRC_NAME:=${APPNAME}
 
 
 ##- Which the source tag / branch / hash id would like to use
-SRC_TAG:=tags/v1.2.1
+SRC_TAG:=tags/v1.2.2
 
 ##- Placeholder for the site-specific version control 
-SRC_VERSION:=1.2.1
+SRC_VERSION:=1.2.2
 
 
 -include $(TOP)/../RELEASE.local

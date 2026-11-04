@@ -10,11 +10,32 @@ MCC Universal Library for Linux (`uldaq`) Configuration Environment and its cust
 * Required packages (Debian and its variants) as follows
 
 ```bash
-apt install autoconf libtool libusb-1.0-0-dev
+apt install autoconf libtool libusb-1.0-0-dev patch
 ```
 
 ## About
 This repository helps to build the `uldaq` package and its customized application consistently on Linux and macOS.
+
+The default source is ULDAQ 1.2.2, upstream commit
+`f87594f7db478adb736a7868859133c45b6ec6b7`. The required TCP receive patch
+reports EOF and incomplete response headers as errors. Its filename uses
+`SRC_VERSION`, independently of the slash in `SRC_TAG=tags/v1.2.2`, and its
+paths are relative to the source root (`-p0`).
+
+`conf`, `debugconf`, `conf.rocky8`, and `conf.rocky10` apply the patch before
+configuration. `build` and `install` check that it is present in the source
+and stop if it is missing, reverted, or incompatible. Repeated application
+is supported. The explicit lifecycle commands are:
+
+```bash
+make patch.apply
+make patch.check
+make patch.revert
+```
+
+Reapply and rebuild after a revert. Do not install an earlier build after
+changing the source. The patch covers the selected 1.2.2 source; another
+`SRC_VERSION` requires its own compatible required patch.
 
 ## `uldaq` commands
 
@@ -69,6 +90,14 @@ make install
 
 * Others
 
+After `make init`, `make all` runs configuration, build, and installation in
+order, including with parallel Make. `make github` also initializes the
+source, so it requires a fresh source directory. It keeps acquisition,
+patching, and compilation under the caller's account and uses `SUDO` for
+installation only when needed. On Linux, a writable installation prefix,
+including a new nested prefix under a writable ancestor, does not use sudo.
+Protected prefixes require an available sudo command and permission to use it.
+
 ```bash
 make uninstall
 make clean
@@ -78,3 +107,15 @@ make distclean
 ## Requirements
 
 Please take a look at the `uldaq` for the required packages. For macOS, I use `port` instead of `brew`.
+
+## Verification
+
+The [build verification](tests/README.md) runs the actual source acquisition,
+patch targets, configure scripts, compilers, and installation commands. Linux
+CI covers Debian 12 and Rocky Linux 8 and 9, including ordinary-user and
+protected-prefix installations.
+
+Source commit, patch state, and the installed library hash identify this
+build. The upstream `UL_VERSION` string remains 1.2.0 in ULDAQ 1.2.2 and is
+not sufficient identity evidence. TC32 recovery additionally requires the
+reconnect-capable consumer driver tracked in jeonghanlee/EPICS-env#120.

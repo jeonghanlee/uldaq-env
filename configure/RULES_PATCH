@@ -1,4 +1,4 @@
-.PHONY: patch.apply patch.revert patch.make
+.PHONY: patch.apply patch.revert patch.check patch.make
 
 ## Apply Patch Files
 patch.apply:
@@ -7,6 +7,10 @@ patch.apply:
 ## Revert Patch Files
 patch.revert:
 	$(QUIET) $(call revert_patch_src)
+
+## Check The Required Patch Before Build Or Installation
+patch.check:
+	$(QUIET) $(call check_patch_src)
 
 patch.make:
 	$(QUIET) mkdir -p $(TOP)/patch

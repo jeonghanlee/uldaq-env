@@ -1,5 +1,7 @@
 PHONY: install uninstall src_install src_uninstall src_clean
 
+conf conf.rocky8 debugconf: patch.apply
+
 install: src_install
 
 uninstall: src_uninstall
@@ -29,9 +31,9 @@ debugconf:
 endif
 
 
-src_install:
-	$(QUIET) make -C $(SRC_PATH) install-exec
-	$(QUIET) make -C $(SRC_PATH)/src install-includeHEADERS
+src_install: patch.check
+	$(QUIET) $(MAKE) -C "$(SRC_PATH)" install-exec
+	$(QUIET) $(MAKE) -C "$(SRC_PATH)/src" install-includeHEADERS
 
 src_uninstall:
 	$(QUIET) make -C $(SRC_PATH) uninstall

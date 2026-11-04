@@ -5,18 +5,16 @@ define make_p0_patch
 endef
 
 define patch_src
-for i in $(wildcard $(TOP)/patch/$(SRC_TAG)*.p0.patch); do\
-	printf "\nPatching %s with the file : %s\n" "$(SRC_PATH)" "$$i";\
-	patch -d $(SRC_PATH) --ignore-whitespace -p0 < $$i;\
-done
+bash -p "$(TOP)/tools/patch-source.bash" apply "$(SRC_PATH)" "$(TOP)/patch/$(SRC_VERSION)-tcp-receive.p0.patch"
 endef
 
 
 define revert_patch_src
-for i in $(wildcard $(TOP)/patch/$(SRC_TAG)*.p0.patch); do\
-	printf "\nReverting applied patch %s with the file : %s\n" "$(SRC_PATH)" "$$i";\
-	patch -R -d $(SRC_PATH) --ignore-whitespace -p0 < $$i;\
-done
+bash -p "$(TOP)/tools/patch-source.bash" revert "$(SRC_PATH)" "$(TOP)/patch/$(SRC_VERSION)-tcp-receive.p0.patch"
+endef
+
+define check_patch_src
+bash -p "$(TOP)/tools/patch-source.bash" check "$(SRC_PATH)" "$(TOP)/patch/$(SRC_VERSION)-tcp-receive.p0.patch"
 endef
 
 GIT_VERSION:=$(lastword $(shell git --version))
@@ -54,6 +52,7 @@ endif
 VARS_EXCLUDES+=make_p0_patch
 VARS_EXCLUDES+=patch_src
 VARS_EXCLUDES+=revert_patch_src
+VARS_EXCLUDES+=check_patch_src
 VARS_EXCLUDES+=QUIET
 VARS_EXCLUDES+=SHELL
 VARS_EXCLUDES+=gitclone

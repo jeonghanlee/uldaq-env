@@ -38,13 +38,18 @@ distclean:
 .PHONY: build conf all github doc
 
 ## Build Source
-build:
-	$(QUIET) make -C $(SRC_PATH)
+build: patch.check
+	$(QUIET) $(MAKE) -C "$(SRC_PATH)"
 
-all: conf build install
+all:
+	$(QUIET) $(MAKE) conf
+	$(QUIET) $(MAKE) build
+	$(QUIET) $(MAKE) install
 
-github: init conf build 
-	$(QUIET) sudo $(MAKE) install
+github: init
+	$(QUIET) $(MAKE) conf
+	$(QUIET) $(MAKE) build
+	$(QUIET) $(SUDO) $(MAKE) install
 
 doc:
 	$(QUIET) cd $(SRC_PATH)/doc && (cat Doxyfile; echo "GENERATE_DOCBOOK = YES") | doxygen -
