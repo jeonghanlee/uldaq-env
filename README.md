@@ -112,8 +112,10 @@ Please take a look at the `uldaq` for the required packages. For macOS, I use `p
 
 The [build verification](tests/README.md) runs the actual source acquisition,
 patch targets, configure scripts, compilers, and installation commands. Linux
-CI covers Debian 12 and Rocky Linux 8 and 9, including ordinary-user and
-protected-prefix installations.
+CI covers Debian 12 and 13, Ubuntu 24.04 and 26.04, and Rocky Linux 8, 9,
+and 10, including ordinary-user and protected-prefix installations. Pushes
+and pull requests that change only Markdown files or files under `docs/`
+do not trigger these workflows.
 
 Source commit, patch state, and the installed library hash identify this
 build. The upstream `UL_VERSION` string remains 1.2.0 in ULDAQ 1.2.2 and is

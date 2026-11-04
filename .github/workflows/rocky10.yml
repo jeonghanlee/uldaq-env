@@ -1,0 +1,49 @@
+name: Rocky10
+
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+  pull_request:
+    branches: [master]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+
+jobs:
+  Rocky10:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container: rockylinux/rockylinux:10
+    steps:
+      - name: Install required packages
+        run: |
+          dnf install -y sudo git gcc gcc-c++ make libusbx-devel autoconf libtool patch python3 shadow-utils util-linux which
+      - uses: actions/checkout@v7.0.1
+      - name: Trust the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Verify source, patch lifecycle, and build entry points
+        run: python3 -B tests/test_build.py --workspace /tmp/uldaq-ci-build --config-target conf.rocky10
+      - name: Prepare the container-local test user
+        run: |
+          useradd -m -s /bin/bash buildtest
+          printf '%s\n' 'buildtest ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/uldaq-buildtest
+          chmod 0440 /etc/sudoers.d/uldaq-buildtest
+      - name: Verify ordinary-user ownership
+        run: runuser -u buildtest -- python3 -B "$GITHUB_WORKSPACE/tests/test_build.py" --workspace /tmp/uldaq-ci-user --mode user
+      - name: Verify protected-prefix installation
+        run: runuser -u buildtest -- python3 -B "$GITHUB_WORKSPACE/tests/test_build.py" --workspace /tmp/uldaq-ci-protected --mode protected --protected-prefix /opt/uldaq-ci
+      - name: Preserve verification evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: uldaq-rocky10-verification
+          path: |
+            /tmp/uldaq-ci-*/source.json
+            /tmp/uldaq-ci-*/checks.json
+            /tmp/uldaq-ci-*/commands.json
+            /tmp/uldaq-ci-*/result.json
+            /tmp/uldaq-ci-*/*-installation.json
+            /tmp/uldaq-ci-*/logs/*.log

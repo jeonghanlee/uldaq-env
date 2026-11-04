@@ -4,10 +4,13 @@ on:
   push:
     branches: [master]
     paths-ignore:
-      - '**.md'
+      - '**/*.md'
       - 'docs/**'
   pull_request:
     branches: [master]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
 
 jobs:
   Rocky9:
@@ -18,7 +21,7 @@ jobs:
       - name: Install required packages
         run: |
           dnf install -y sudo git gcc gcc-c++ make libusbx-devel autoconf libtool patch python3 shadow-utils util-linux which
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7.0.1
       - name: Trust the checkout
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Verify source, patch lifecycle, and build entry points
@@ -34,7 +37,7 @@ jobs:
         run: runuser -u buildtest -- python3 -B "$GITHUB_WORKSPACE/tests/test_build.py" --workspace /tmp/uldaq-ci-protected --mode protected --protected-prefix /opt/uldaq-ci
       - name: Preserve verification evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: uldaq-rocky9-verification
           path: |
