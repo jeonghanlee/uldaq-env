@@ -3,8 +3,8 @@
 Observed on 2026-11-04, x86-64 Linux. These results cover the build and test
 inputs identified below, published in revision
 0320f5edecfaa16cf6ef75aaee122487f68aca12. Its three required GitHub Actions
-jobs passed. Distribution acceptance for issue #2 still requires the
-published-checkout evidence review recorded in the milestone document.
+jobs passed. The published-checkout reproduction below also satisfies the
+distribution acceptance criterion for issue #2.
 
 ## Source And Build Contract
 
@@ -101,10 +101,41 @@ successfully on 2026-11-04:
 The README badges link to each workflow's current result. These successful
 push runs do not directly test the exclusion of documentation-only events.
 
-For issue #2, the distribution criterion still needs an explicit assessment
-of the published-checkout evidence and its installed-library identity.
-Publication and successful CI alone are not recorded here as completion of
-that separate acceptance item.
+### Published Checkout Reproduction
+
+The Debian 12 run for 0320f5edecfaa16cf6ef75aaee122487f68aca12 reproduced the
+corrected installation from a fresh published checkout. Its job log records
+`git init` at 20:08:26 UTC on 2026-11-04, followed by a fetch of that exact
+commit. The associated `uldaq-debian12-verification` artifact identifies the
+same commit and run. The log and artifact were inspected on 2026-11-04 at
+21:46 UTC; [CI run and evidence](https://github.com/jeonghanlee/uldaq-env/actions/runs/41903647406).
+
+All 17 build/test input hashes in each of the build, user, and protected
+records matched the corresponding published file bytes. The real suite made
+isolated copies of these exact build inputs, acquired the actual upstream
+source, and executed the shipped patch, configure, compiler, and installer
+paths. The records contain 143/143 build, 15/15 user, and 11/11 protected
+checks, each with a complete Passed result.
+
+| Initially Unpatched Case | Successful Make Sequence | Installation Result |
+| --- | --- | --- |
+| `direct-original` | `init`, `conf`, `build`, `install` | Corrected source, installed header and shared library |
+| `all-original` | `init`, `all` | Corrected source, installed header and shared library |
+| `github-original` | `github` | Corrected source, installed header and shared library |
+
+Every command in these sequences exited zero. Each installation record
+contains its resolved library path, prefix, owner, and SHA-256 hashes.
+The three cases recorded the same header and library hashes:
+
+| Installed File | SHA-256 |
+| --- | --- |
+| `include/uldaq.h` | 8cf7e3415ed465ee2cd8c867b947196fc7364740b1da5f398fab23daf95a62e5 |
+| `lib/libuldaq.so.1.2.2` | b1da44fcc26188386248355b53d3c486f746038b848de61f47b3a188a338fdd1 |
+
+This evidence satisfies the fresh published-checkout distribution criterion
+for issue #2. It identifies the Debian 12 CI installations separately from
+the Debian 13 libraries used for the transport comparison below; it makes no
+claim of identical binary hashes across those environments.
 
 ## Transport Results
 
@@ -188,4 +219,5 @@ macOS, or hardware acceptance is established here. Rocky Linux 10 coverage
 is limited to the recorded build and installation checks.
 The consumer fixture belongs to the separate integration work tracked in
 jeonghanlee/EPICS-env#120. Issue #1 has published build and installation
-evidence; issue #2 retains its separate distribution acceptance item.
+evidence; issue #2 also has verified fresh-checkout distribution evidence.
+Neither result establishes downstream integration or hardware acceptance.

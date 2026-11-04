@@ -7,7 +7,7 @@ Canonical branch or ref: master
 Git upstream: origin/master
 Remote tracker: jeonghanlee/uldaq-env issues #1 and #2; no GitHub milestone
 
-Next session entry point: `docs/milestone-988b152.md`, M1 / T5: assess published-checkout and installed-library evidence against the distribution criterion, then synchronize issue #2 and prepare its closure. M2 is complete; issue #1 closed on 2026-11-04.
+Next session entry point: `docs/milestone-988b152.md`: M1 and M2 are complete, with issues #2 and #1 closed on 2026-11-04. Commit and publish the final verification and closure records under separate Git authority; version-tag placement is a separate follow-up.
 
 ## Scope
 
@@ -21,7 +21,7 @@ Out of scope: EPICS-env vendor integration, measComp reconnect implementation, p
 
 | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
 | --- | --- | --- | --- | --- | --- | --- |
-| M1 | Distribute ULDAQ 1.2.2 with the TCP receive fix | Milestone | In progress | No | D1, G1 | Published in 0320f5e; required CI passed; distribution evidence review and issue closure remain; [detail](#m1---distribute-uldaq-122-with-the-tcp-receive-fix) |
+| M1 | Distribute ULDAQ 1.2.2 with the TCP receive fix | Milestone | Complete | No | D1, G1 | Published in 0320f5e; required CI and fresh-checkout distribution verification passed; issue #2 body synchronized and closed on 2026-11-04; [detail](#m1---distribute-uldaq-122-with-the-tcp-receive-fix) |
 | M2 | Respect installation prefix permissions | Milestone | Complete | No | D2, G1 | Published fix and required CI satisfy acceptance; issue #1 body synchronized and closed on 2026-11-04; [detail](#m2---respect-installation-prefix-permissions) |
 | G1 | Authorize repository publication | External gate | Complete | No | | Commit and push authorized and completed on 2026-11-04; [detail](#g1---authorize-repository-publication) |
 
@@ -39,7 +39,7 @@ Out of scope: EPICS-env vendor integration, measComp reconnect implementation, p
 Origin: 988b152 / M1
 Identity History: none
 GitHub Issue: #2, https://github.com/jeonghanlee/uldaq-env/issues/2
-Status: In progress
+Status: Complete
 
 ##### Summary
 
@@ -111,7 +111,7 @@ For T3, use isolated checkouts and installation prefixes. Exercise the documente
 | T2 | 2026-11-04 | Isolated upstream source on all three local container platforms | Passed | Exact correction, repeated apply, byte-exact revert/reapply, and missing/empty/incompatible patch refusal; [results](verification-uldaq-1.2.2.md#local-container-results). |
 | T3 | 2026-11-04 | Debian 12, Rocky 8.10, Rocky 9 local containers and GitHub Actions | Passed | 143 local build checks per platform; published revision 0320f5e passed all three remote build/install jobs; [published results](verification-uldaq-1.2.2.md#published-revision-and-github-actions). |
 | T4 | 2026-11-04 18:10 UTC | Debian 13; real EPICS Base 7.0.10, asyn 4.45.0 and measComp; isolated TC32 network fixture | Passed | Original installed library reproduced EOF value loss; corrected installed library passed 29/29 with normal IOC exit; [library and fixture identities](verification-uldaq-1.2.2.md#transport-results). |
-| T5 | 2026-11-04 | Published revision 0320f5e | Pending evidence review | CI checkout and build/install steps passed; assessment of published-checkout and installed-library evidence against this distribution criterion remains open. |
+| T5 | 2026-11-04 21:46 UTC | Published revision 0320f5e; Debian 12 GitHub Actions | Passed | Fresh checkout fetched the exact published revision; all 17 build/test input hashes matched; direct, all, and github installations passed with recorded header/library hashes; [published checkout reproduction](verification-uldaq-1.2.2.md#published-checkout-reproduction). |
 
 The installed-library comparison above was executed for this implementation. It is separate from the earlier candidate results in jeonghanlee/EPICS-env#120 and does not establish publication, hardware acceptance, or downstream integration.
 
@@ -120,17 +120,18 @@ The installed-library comparison above was executed for this implementation. It 
 - Local verification is recorded in [ULDAQ 1.2.2 Verification](verification-uldaq-1.2.2.md).
 - 2026-11-04: implementation and maintainer-documentation review found no open corrective findings.
 - Published implementation: 0320f5edecfaa16cf6ef75aaee122487f68aca12. Debian 12, Rocky 8.10, and Rocky 9 GitHub Actions passed; [run links](verification-uldaq-1.2.2.md#published-revision-and-github-actions).
-- M1 / T5 evidence review and issue #2 body synchronization and closure remain pending.
+- 2026-11-04: M1 / T5 passed using the existing Debian 12 CI execution. Its checkout log and verification artifact establish the published revision, exact build inputs, successful real build/install commands, and installed-library identity; [evidence](verification-uldaq-1.2.2.md#published-checkout-reproduction).
+- 2026-11-04 21:57 UTC: issue #2 body synchronized with all eight acceptance items checked; [closure comment](https://github.com/jeonghanlee/uldaq-env/issues/2#issuecomment-6643143158) published. Remote state verified as closed with reason completed at 2026-11-04T21:57:24Z. All required verification and the linked-issue closure condition are satisfied.
 
 ##### GitHub Projection
 
 Title: Distribute ULDAQ 1.2.2 with the TCP receive fix
 Labels: bug
 GitHub Milestone: none
-Observed State: open
+Observed State: closed
 Observed Labels: bug
 Observed Milestone: none
-Last Compared: 2026-11-04 21:16 UTC; remote updated at 2026-11-04T18:29:22Z. State is open, label is bug, assignee is jeonghanlee, and milestone is none. The remote body still describes an unpublished candidate; publication and CI results require synchronization. Recheck with `gh issue view 2 --repo jeonghanlee/uldaq-env`.
+Last Compared: 2026-11-04 21:57 UTC; remote updated at 2026-11-04T21:57:24Z. State is closed with reason completed, label is bug, assignee is jeonghanlee, and milestone is none. Remote body and closure comment match the prepared content. Recheck with `gh issue view 2 --repo jeonghanlee/uldaq-env`.
 
 #### M2 - Respect installation prefix permissions
 
