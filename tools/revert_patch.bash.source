@@ -1,0 +1,13 @@
+Original: shared/skills/patch/scripts/revert_patch.bash
+Skill commit: 2ef69e762789ce906788188dde1247398c8948ac
+sha256: a327a96e6a567e1189c8c5b492b7299816457d598cc44e1caa0f6d6222ae5276
+Copied on: 2026-11-16
+
+Skill: the patch skill of the dev-env repository (origin/master at the commit above); the
+copy was taken with cp -p from a clean checkout and check-copy.bash of the skill reports it
+as the same. Needs: bash and patch.
+This file is a copy and is not edited here. A change is proposed to the skill and the copy is
+taken again from it, with the lines above updated.
+Used by configure/RULES_FUNC as: revert_patch.bash <source> <patch>.
+Exit status (skill): 0 reverted or skipped as unapplied, 2 usage or input error,
+3 state cannot be classified.

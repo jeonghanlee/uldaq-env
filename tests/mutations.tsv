@@ -1,0 +1,12 @@
+# id	file	old text (must occur exactly once)	new text	mode	expected failing assertion (new test)	expected failing assertion (old test, - when the old test has no such check)
+baseline	-	-	-	build	none	none
+# M1: the privileged commands of src_install use $(SUDO), which is empty for a writable prefix. First prediction: "user-github: installed ownership". The run showed a different mechanism: a literal sudo on the library install makes root create the nested prefix, the next command (run as the user) cannot create include in it, and make github exits non-zero, so "user-github: make -j2 github" fails before the ownership check is reached. M7 reaches the ownership check.
+M1-sudo-literal	configure/RULES_INSTALL	$(QUIET) $(SUDO) $(MAKE) -C "$(SRC_PATH)" install-exec	$(QUIET) sudo $(MAKE) -C "$(SRC_PATH)" install-exec	user	user-github: make -j2 github	user-github: installed ownership
+# M7: SUDO always set (the hard-coded sudo of the old github target): every install command runs as root, make github succeeds, and the installed files are root-owned in the user case.
+M7-sudo-always	configure/CONFIG_SRC	SUDO :=	SUDO = $(SUDO_CMD)	user	user-github: installed ownership	-
+# M2 new test: the first prediction was "unpatched direct build rejected"; the run showed that check passes (the unconfigured clone makes build exit 2 anyway) and "unpatched direct build diagnostic" is the assertion that fails.
+M2-build-without-patch-check	configure/RULES_SRC	build: patch.check	build:	build	unpatched direct build diagnostic	unpatched direct build rejected
+M3-source-line-dropped	tools/vendor-record.bash	printf 'patches=%s\nupstream=%s\n' "$patches" "$upstream"	printf 'patches=%s\n' "$patches"	build	direct-original: record source bytes	-
+M4-uninstall-removes-cfg	tools/vendor-record.bash	rm -f -- "$prefix/cfg/$name.buildid" "$prefix/cfg/$name.source"	rm -rf -- "$prefix/cfg"	build	record-git: uninstall keeps only other files	-
+M5-tag-sorted-lexically	tools/vendor-record.bash	| sort -V | tail -n 1	| sort | tail -n 1	build	record-git-tagged: record source bytes	-
+M6-dirty-marker-dropped	tools/vendor-record.bash	1) marker="+dirty" ;;	1) marker="" ;;	build	record-git-dirty: record source bytes	-

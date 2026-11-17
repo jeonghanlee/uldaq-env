@@ -49,7 +49,7 @@ all:
 github: init
 	$(QUIET) $(MAKE) conf
 	$(QUIET) $(MAKE) build
-	$(QUIET) $(SUDO) $(MAKE) install
+	$(QUIET) $(MAKE) install
 
 doc:
 	$(QUIET) cd $(SRC_PATH)/doc && (cat Doxyfile; echo "GENERATE_DOCBOOK = YES") | doxygen -

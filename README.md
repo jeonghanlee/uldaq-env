@@ -28,8 +28,8 @@ paths are relative to the source root (`-p0`).
 
 `conf`, `debugconf`, `conf.rocky8`, and `conf.rocky10` apply the patch before
 configuration. `build` and `install` check that it is present in the source
-and stop if it is missing, reverted, or incompatible. Repeated application
-is supported. The explicit lifecycle commands are:
+and stop if it is missing, reverted, or incompatible. The explicit lifecycle
+commands are:
 
 ```bash
 make patch.apply
@@ -37,9 +37,24 @@ make patch.check
 make patch.revert
 ```
 
+`tools/apply_patch.bash` applies and checks the patch and `tools/revert_patch.bash`
+reverts it; both are copies of the tools of the patch skill, and the origin, skill
+commit, and digest of each are in the `.source` file beside it. Both classify the
+patch first with `patch --dry-run` in both directions, so both can run again: a
+second `make patch.apply` reports that the patch is already applied and changes
+nothing, and a second `make patch.revert` reports that it is not applied and
+changes nothing. A state that is neither stops with an error. The tools exit with
+0 when done, already so, or skipped; 1 when `patch.check` finds the patch not
+applied or `patch` fails while changing the source; 2 for a missing, empty, or
+unreadable patch file; 3 when the state cannot be classified. A plain `patch`
+call on a patched source would stop with "Reversed (or previously applied) patch
+detected" and leave a `.rej` file; after such a stop, revert, remove the `.rej`
+file, and apply again.
+
 Reapply and rebuild after a revert. Do not install an earlier build after
 changing the source. The patch covers the selected 1.2.2 source; another
-`SRC_VERSION` requires its own compatible required patch.
+`SRC_VERSION` requires its own compatible required patch. The inventory of the
+carried patch is `patch/README.md`.
 
 ## `uldaq` commands
 
@@ -107,6 +122,31 @@ make uninstall
 make clean
 make distclean
 ```
+
+## Vendor record
+
+On Linux, `make install` writes two files under `<prefix>/cfg` for the shared
+objects it installed. Other wrappers may install into the same prefix, so the
+list comes from a staged installation of the configured source, never from a
+directory scan. macOS installations write no record.
+
+* `uldaq-env.buildid`: one `buildid=<path relative to the prefix> <hex>` line
+  per installed shared object, sorted by path. The value is the GNU build-id
+  read by `readelf -n` from the installed file, or `none` when the file has
+  none. Symbolic links and static archives are not listed.
+* `uldaq-env.source`: four `key=value` lines in this order. `tag` is the
+  highest tag by version order on `HEAD`, `untagged`, or `unknown`; `commit`
+  is the full commit hash, followed by `+dirty` when a tracked file differs
+  from `HEAD`, or `unknown` when it cannot be read from the repository root.
+  `patches` is the required patch file name when the source clone carries
+  it, otherwise `none`. `upstream` is `SRC_TAG` without the leading `tags/`.
+
+A build-id identifies one binary built on one operating system; the source
+identity is carried by `uldaq-env.source`. Both files are written through a
+temporary file and replaced in one step, are not tracked by Git, and are
+rewritten completely on every install. `make uninstall` runs the source
+uninstall, removes these two files, and removes the directories that became
+empty; it never removes the prefix itself or files of other wrappers.
 
 ## Requirements
 
