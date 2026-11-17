@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Install required packages
         run: |
-          dnf install -y sudo git gcc gcc-c++ make libusbx-devel autoconf libtool patch shadow-utils util-linux which
+          dnf install -y sudo git gcc gcc-c++ make libusbx-devel autoconf libtool patch diffutils shadow-utils util-linux which
       - uses: actions/checkout@v7.0.1
       - name: Trust the checkout
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
