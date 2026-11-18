@@ -9,8 +9,9 @@
 SRC_GITURL:=$(SRC_URL)/$(SRC_NAME)
 ### CF_SRC_PATH used for a local directory which is a clone git repository
 SRC_PATH:=$(SRC_NAME)-src
-### VENDOR_RECORD_NAME names the record files <prefix>/cfg/<name>.buildid and <name>.source
-VENDOR_RECORD_NAME:=uldaq-env
+### VENDOR_RECORD_NAME is the library name of the vendor record: the name= value and the
+### directory <prefix>/cfg/<name> that holds build-record and build-record.sha256
+VENDOR_RECORD_NAME:=uldaq
 
 #DOCURL:=https://docs.payara.fish/community/docs/$(SRC_VERSION)/README.html
 DOCURL:=$(SRC_GITURL)

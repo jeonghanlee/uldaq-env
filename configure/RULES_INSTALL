@@ -34,7 +34,7 @@ endif
 src_install: patch.check
 	$(QUIET) $(SUDO) $(MAKE) -C "$(SRC_PATH)" install-exec
 	$(QUIET) $(SUDO) $(MAKE) -C "$(SRC_PATH)/src" install-includeHEADERS
-	$(QUIET) $(SUDO) bash -p "tools/vendor-record.bash" write "$(MAKE)" "$(TOP)" "$(SRC_PATH)" "$(VENDOR_RECORD_NAME)" "$(SRC_TAG)" "$(TOP)/patch/$(SRC_VERSION)-tcp-receive.p0.patch"
+	$(QUIET) $(SUDO) bash -p "tools/vendor-record.bash" write "$(MAKE)" "$(TOP)" "$(SRC_PATH)" "$(VENDOR_RECORD_NAME)" "$(SRC_VERSION)" "$(SRC_TAG)" "$(TOP)/patch/$(SRC_VERSION)-tcp-receive.p0.patch"
 
 src_uninstall:
 	$(QUIET) bash -p "$(TOP)/tools/vendor-record.bash" remove "$(MAKE)" "$(TOP)" "$(SRC_PATH)" "$(VENDOR_RECORD_NAME)"

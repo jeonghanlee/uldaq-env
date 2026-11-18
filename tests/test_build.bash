@@ -7,10 +7,11 @@ set -euo pipefail
 
 readonly UPSTREAM_COMMIT="f87594f7db478adb736a7868859133c45b6ec6b7"
 readonly UPSTREAM_TAG="v1.2.2"
+readonly UPSTREAM_VERSION="1.2.2"
 readonly PATCH_NAME="1.2.2-tcp-receive.p0.patch"
 readonly CORRECTION="err = (received == 0) ? ERR_DEV_NOT_CONNECTED : ERR_DEAD_DEV;"
 readonly SOURCE_FILE="src/net/NetDaqDevice.cpp"
-readonly RECORD_NAME="uldaq-env"
+readonly RECORD_NAME="uldaq"
 readonly COMMAND_TIMEOUT=900
 readonly CHECK_PATTERN=$'\t\t\t// EOF or a short header cannot represent a complete response.\n\t\t\t'
 
@@ -203,22 +204,41 @@ function build_id_of {
     fi
 }
 
-# Verifies the exact bytes of both record files against the independently derived expectation.
-# check_record CASE PREFIX TAG COMMIT: TAG and COMMIT are the expected source facts.
+# Verifies the file set, the exact bytes of build-record and the content of its digest file
+# against the independently derived expectation.
+# The optional fifth argument is the expected patch line: the default is the line naming the
+# required patch file, an empty string means the record has no patch line.
+# check_record CASE PREFIX TAG SOURCE [PATCH_LINE]: TAG and SOURCE are the expected tag and source values.
 function check_record {
-    local name="$1" prefix="$2" tag="$3" commit="$4"
-    local cfg="$prefix/cfg" expected_dir="$workspace/${name}-expected" listing id
+    local name="$1" prefix="$2" tag="$3" source_value="$4" patch_line="patch=${PATCH_NAME}"
+    local library="lib/libuldaq.so.1.2.2"
+    local cfg="$prefix/cfg" dir="$prefix/cfg/${RECORD_NAME}" expected_dir="$workspace/${name}-expected"
+    local listing id sum recorded
 
+    if [[ $# -ge 5 ]]; then
+        patch_line="$5"
+    fi
     mkdir -p "$expected_dir"
-    id=$(build_id_of "$prefix/lib/libuldaq.so.1.2.2")
-    printf 'buildid=lib/libuldaq.so.1.2.2 %s\n' "$id" > "$expected_dir/${RECORD_NAME}.buildid"
-    printf 'tag=%s\ncommit=%s\npatches=%s\nupstream=%s\n' "$tag" "$commit" "$PATCH_NAME" "$UPSTREAM_TAG" \
-        > "$expected_dir/${RECORD_NAME}.source"
+    id=$(build_id_of "$prefix/$library")
+    sum=$(digest "$prefix/$library")
+    recorded=$(digest "$dir/build-record")
+    {
+        printf 'format=1\nname=%s\nversion=%s\n' "$RECORD_NAME" "$UPSTREAM_VERSION"
+        printf 'tag=%s\nsource=%s\nupstream=%s\n' "$tag" "$source_value" "$UPSTREAM_TAG"
+        if [[ -n "$patch_line" ]]; then
+            printf '%s\n' "$patch_line"
+        fi
+        printf 'arch=linux-%s\n' "$(uname -m)"
+        printf 'artifact=%s %s\nbuildid=%s %s\n' "$library" "$sum" "$library" "$id"
+    } > "$expected_dir/build-record"
+    printf '%s\n' "$recorded" > "$expected_dir/build-record.sha256"
     listing=$(cd "$cfg" && find . -mindepth 1 | LC_ALL=C sort | tr '\n' ' ')
-    check "${name}: record file set" "$listing" equal "$listing" "./${RECORD_NAME}.buildid ./${RECORD_NAME}.source "
-    check "${name}: record buildid bytes" "$id" same_bytes "$cfg/${RECORD_NAME}.buildid" "$expected_dir/${RECORD_NAME}.buildid"
-    check "${name}: record source bytes" "tag=${tag} commit=${commit}" \
-        same_bytes "$cfg/${RECORD_NAME}.source" "$expected_dir/${RECORD_NAME}.source"
+    check "${name}: record file set" "$listing" equal "$listing" \
+        "./${RECORD_NAME} ./${RECORD_NAME}/build-record ./${RECORD_NAME}/build-record.sha256 "
+    check "${name}: record build-record bytes" "tag=${tag} source=${source_value} ${patch_line}" \
+        same_bytes "$dir/build-record" "$expected_dir/build-record"
+    check "${name}: record digest bytes" "$recorded" \
+        same_bytes "$dir/build-record.sha256" "$expected_dir/build-record.sha256"
 }
 
 # Checks the installed artifacts, the optional ownership, and the vendor record of a non-git copy.
@@ -346,10 +366,12 @@ function builds {
 }
 
 # Builds in a real git checkout and verifies the source record for an untagged commit, for the
-# highest of several tags on HEAD, and for a modified tracked file; then verifies that the
-# uninstall removes only this wrapper's files and is repeatable.
+# highest of several tags on HEAD, and for a modified tracked file; then calls the record writer
+# directly for the patch states that the install gate never lets through make install (patch not
+# applied, patch state unclassifiable); then verifies that the uninstall removes only this
+# wrapper's files and is repeatable.
 function vendor_record {
-    local name="record-git" head listing
+    local name="record-git" head listing text
     local -a git_run=(git -c user.name=test -c user.email=test@example.invalid -c commit.gpgsign=false -c tag.gpgsign=false)
 
     new_case "$name"
@@ -373,16 +395,28 @@ function vendor_record {
     make_case "$case_dir" "$case_prefix" 0 install
     check_record "${name}-dirty" "$case_prefix" 1.2.2-10 "${head}+dirty"
 
+    make_case "$case_dir" "$case_prefix" 0 patch.revert
+    run "$case_dir" 0 bash -p tools/vendor-record.bash write make "$case_dir" uldaq-src "$RECORD_NAME" \
+        "$UPSTREAM_VERSION" "tags/${UPSTREAM_TAG}" "$case_dir/patch/$PATCH_NAME"
+    check_record "${name}-unapplied" "$case_prefix" 1.2.2-10 "${head}+dirty" ""
+
+    slurp text "$case_dir/patch/$PATCH_NAME"
+    printf '%s' "${text//NetDaqDevice.cpp/AbsentDevice.cpp}" > "$case_dir/patch/$PATCH_NAME"
+    run "$case_dir" 0 bash -p tools/vendor-record.bash write make "$case_dir" uldaq-src "$RECORD_NAME" \
+        "$UPSTREAM_VERSION" "tags/${UPSTREAM_TAG}" "$case_dir/patch/$PATCH_NAME"
+    check_record "${name}-unknown" "$case_prefix" 1.2.2-10 "${head}+dirty" "patch=unknown"
+
     : > "$case_prefix/lib/libother.so.1"
-    : > "$case_prefix/cfg/other.buildid"
+    mkdir "$case_prefix/cfg/other"
+    : > "$case_prefix/cfg/other/build-record"
     make_case "$case_dir" "$case_prefix" 0 uninstall
     listing=$(cd "$case_prefix" && find . -mindepth 1 | LC_ALL=C sort | tr '\n' ' ')
     check "${name}: uninstall keeps only other files" "$listing" \
-        equal "$listing" "./cfg ./cfg/other.buildid ./lib ./lib/libother.so.1 "
+        equal "$listing" "./cfg ./cfg/other ./cfg/other/build-record ./lib ./lib/libother.so.1 "
     make_case "$case_dir" "$case_prefix" 0 uninstall
     listing=$(cd "$case_prefix" && find . -mindepth 1 | LC_ALL=C sort | tr '\n' ' ')
     check "${name}: second uninstall removes nothing" "$listing" \
-        equal "$listing" "./cfg ./cfg/other.buildid ./lib ./lib/libother.so.1 "
+        equal "$listing" "./cfg ./cfg/other ./cfg/other/build-record ./lib ./lib/libother.so.1 "
 }
 
 function permissions {

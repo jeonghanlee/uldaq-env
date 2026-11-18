@@ -40,8 +40,9 @@ The suite requires Bash 4.4 or newer. Exit status 0 is Passed, 1 is Failed, and
 | Complete workflow | Parallel `github` from a fresh source directory | Source initialization and corrected installation |
 | Writable prefix | Ordinary-user `github` into a new nested prefix, then installation into that existing prefix | Every installed path belongs to the invoking user |
 | Protected prefix | Ordinary-user `github` with container-local sudo | Installed artifacts belong to root; source and build files remain user-owned |
-| Vendor record, no Git checkout | Every installation above | `cfg` holds exactly the two record files; `.buildid` equals the `readelf` build-id of the installed shared object; `.source` reads `tag=unknown`, `commit=unknown`, the patch file name, and the upstream tag |
-| Vendor record, Git checkout | Installation from a Git checkout: untagged commit, several tags on `HEAD`, modified tracked file | `tag=untagged`, then the highest tag by version order, then `commit=<hash>+dirty` |
+| Vendor record, no Git checkout | Every installation above | `cfg` holds only the directory `uldaq` with `build-record` and `build-record.sha256`; `build-record` equals the expected lines, with the `readelf` build-id and the SHA-256 of the installed shared object, `tag=unknown` and `source=unknown`, the upstream version and tag, the patch file name, and the architecture; the digest file equals the SHA-256 of `build-record` |
+| Vendor record, Git checkout | Installation from a Git checkout: untagged commit, several tags on `HEAD`, modified tracked file | `tag=untagged`, then the highest tag by version order, then `source=<hash>+dirty` |
+| Vendor record, patch states | The record writer called directly after `patch.revert`, and again with a patch file that names another source file | No patch line when the patch is not applied, and `patch=unknown` when its state cannot be classified |
 | Uninstall | `uninstall` twice with another wrapper's files in the same prefix | Only this wrapper's files and emptied directories are removed; the second run exits 0 and removes nothing |
 
 ## Evidence And Verdicts
@@ -75,8 +76,12 @@ occur exactly once, and records the file hashes before and after the change. Run
 the suite on each copy and compare the failing assertion with the table. The
 rows are: use a literal `sudo` on the library install of `src_install` (ownership assertion), remove
 `build`'s patch prerequisite (unpatched-source assertion), drop a line of the
-`.source` record (record assertion), and remove the whole `cfg` directory on
-uninstall (uninstall assertion). A failure at an unrelated setup step does not
+`build-record` (record assertion), and remove the whole `cfg` directory on
+uninstall (uninstall assertion). Further rows break the tag order of the record
+(`sort -V` replaced by a plain sort), drop the `+dirty` marker, set the
+privilege variable to always use `sudo` (ownership assertion), write a patch
+line for a patch that is not applied, and drop the `patch=unknown` line for an
+unclassifiable patch. A failure at an unrelated setup step does not
 establish a regression.
 
 ## Transport Verification Boundary

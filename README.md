@@ -125,27 +125,37 @@ make distclean
 
 ## Vendor record
 
-On Linux, `make install` writes two files under `<prefix>/cfg` for the shared
-objects it installed. Other wrappers may install into the same prefix, so the
-list comes from a staged installation of the configured source, never from a
-directory scan. macOS installations write no record.
+On Linux, `make install` writes `<prefix>/cfg/uldaq/build-record` and its digest
+file `<prefix>/cfg/uldaq/build-record.sha256` for the shared objects it
+installed, in the `key=value` form that EPICS-env uses for its modules. Other
+wrappers may install into the same prefix, so the list of files comes from a
+staged installation of the configured source, never from a directory scan.
+macOS installations write no record.
 
-* `uldaq-env.buildid`: one `buildid=<path relative to the prefix> <hex>` line
-  per installed shared object, sorted by path. The value is the GNU build-id
-  read by `readelf -n` from the installed file, or `none` when the file has
-  none. Symbolic links and static archives are not listed.
-* `uldaq-env.source`: four `key=value` lines in this order. `tag` is the
-  highest tag by version order on `HEAD`, `untagged`, or `unknown`; `commit`
-  is the full commit hash, followed by `+dirty` when a tracked file differs
-  from `HEAD`, or `unknown` when it cannot be read from the repository root.
-  `patches` is the required patch file name when the source clone carries
-  it, otherwise `none`. `upstream` is `SRC_TAG` without the leading `tags/`.
+* `build-record`: the lines `format=1`, `name=uldaq`, `version` (the upstream
+  version, `SRC_VERSION`), `tag` and `source` (the tag and the commit of this
+  repository), `upstream` (`SRC_TAG` without the leading `tags/`), `patch` (one
+  line naming the required patch file when the source clone carries it; no line
+  when the patch is not applied, and `patch=unknown` when its state cannot be
+  determined), and `arch` (`linux-` and the machine name), in this order. Then, for each
+  installed shared object, `artifact=<path> <sha256>` directly followed by
+  `buildid=<path> <hex>`, sorted by path, with the path relative to the prefix.
+  The build-id is read by `readelf -n` from the installed file, or `none` when
+  the file has none. Symbolic links and static archives are not listed.
+* `tag` is the highest tag by version order on `HEAD`, `untagged`, or
+  `unknown`; `source` is the full commit hash, followed by `+dirty` when a
+  tracked file differs from `HEAD`, or `unknown` when it cannot be read from the
+  repository root.
+* `build-record.sha256`: one line, the sha256 of `build-record`.
 
 A build-id identifies one binary built on one operating system; the source
-identity is carried by `uldaq-env.source`. Both files are written through a
-temporary file and replaced in one step, are not tracked by Git, and are
-rewritten completely on every install. `make uninstall` runs the source
-uninstall, removes these two files, and removes the directories that became
+identity is carried by `tag`, `source`, `upstream`, and `patch`. Both files are
+written through a temporary file in the same directory and renamed, with the
+mode the umask gives and no explicit `chmod`; `cfg` and `cfg/uldaq` are created
+only when absent, and the digest file is written after the record. The files
+are not tracked by Git and are rewritten completely on every install. `make
+uninstall` runs the source uninstall, removes these two files, the directory
+`cfg/uldaq`, and `cfg` when it is empty, and removes the directories that became
 empty; it never removes the prefix itself or files of other wrappers.
 
 ## Requirements
