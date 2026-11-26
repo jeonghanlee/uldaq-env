@@ -9,10 +9,10 @@
       "also": []
     },
     {
-      "id": "M2-state-query-uses-command-timeout",
-      "file": "src/net/NetDaqDevice.cpp",
-      "old": "UlError err = sendConnectionCode(mConnectionTimeout);",
-      "new": "UlError err = sendConnectionCode(mIoTimeout);",
+      "id": "M2-tc32-keeps-state-query",
+      "file": "src/net/ETc32.h",
+      "old": "virtual bool queriesStateAfterFailedCommand() const { return false; }",
+      "new": "virtual bool queriesStateAfterFailedCommand() const { return true; }",
       "intended": ["silent command time"],
       "also": []
     },
@@ -30,7 +30,7 @@
       "old": "mConnectionTimeout = (int) timeout;",
       "new": "(void) timeout;",
       "intended": ["read back both timeouts"],
-      "also": ["rejected values leave the timeouts unchanged", "configured connect time", "silent command time", "values kept after reconnect"]
+      "also": ["rejected values leave the timeouts unchanged", "configured connect time", "values kept after reconnect"]
     },
     {
       "id": "M5-connect-validation-removed",
@@ -39,6 +39,14 @@
       "new": "mConnectionTimeout = (int) timeout;",
       "intended": ["connection timeout 0 rejected"],
       "also": ["connection timeout -1 rejected", "connection timeout 2147483648 rejected", "rejected values leave the timeouts unchanged", "configured connect time"]
+    },
+    {
+      "id": "M6-silent-command-returns-net-timeout",
+      "file": "src/net/NetDaqDevice.cpp",
+      "old": "if(queriesStateAfterFailedCommand() && isDevSocketConnected())",
+      "new": "if(!queriesStateAfterFailedCommand() || isDevSocketConnected())",
+      "intended": ["silent command returns ERR_DEV_NOT_CONNECTED"],
+      "also": []
     }
   ]
 }

@@ -104,8 +104,34 @@ index eed9c77..18c73ff 100644
  
  
  	virtual void getVersionStr(DevVersionType verType, char* verStr, unsigned int* maxStrLen) = 0;
+diff --git src/net/ETc.h src/net/ETc.h
+index 0b58753..5ade283 100644
+--- src/net/ETc.h
++++ src/net/ETc.h
+@@ -17,6 +17,8 @@ class UL_LOCAL ETc: public NetDaqDevice
+ public:
+ 	ETc(const DaqDeviceDescriptor& daqDeviceDescriptor);
+ 	virtual ~ETc();
++
++	virtual bool queriesStateAfterFailedCommand() const { return false; }
+ };
+ } /* namespace ul */
+ 
+diff --git src/net/ETc32.h src/net/ETc32.h
+index 856bef4..1761523 100644
+--- src/net/ETc32.h
++++ src/net/ETc32.h
+@@ -18,6 +18,8 @@ public:
+ 	ETc32(const DaqDeviceDescriptor& daqDeviceDescriptor);
+ 	virtual ~ETc32();
+ 
++	virtual bool queriesStateAfterFailedCommand() const { return false; }
++
+ protected:
+ 	virtual unsigned char getMemCmd(MemRegion memRegionType, bool writeAccess) const;
+ 
 diff --git src/net/NetDaqDevice.cpp src/net/NetDaqDevice.cpp
-index e844c9d..2809ec1 100644
+index e844c9d..8a055d8 100644
 --- src/net/NetDaqDevice.cpp
 +++ src/net/NetDaqDevice.cpp
 @@ -10,10 +10,35 @@
@@ -224,7 +250,7 @@ index e844c9d..2809ec1 100644
  
  	if(macAddr == devMacAddr)
  		validDev = true;
-@@ -667,6 +696,8 @@ UlError NetDaqDevice::receiveFrame(unsigned char cmd, unsigned char frameId, uns
+@@ -667,11 +696,15 @@ UlError NetDaqDevice::receiveFrame(unsigned char cmd, unsigned char frameId, uns
  		}
  		else
  		{
@@ -233,7 +259,15 @@ index e844c9d..2809ec1 100644
  			if(received == -1)
  			{
  				UL_LOG("receiveFrame failed, recv() error: " << strerror(errno));
-@@ -937,7 +968,7 @@ bool NetDaqDevice::isDevSocketConnected() const
+ 
+-				if(isDevSocketConnected())
++				// the state query waits for the connection timeout, so a device that ends a failed command within
++				// the command timeout reports the lost connection without it
++				if(queriesStateAfterFailedCommand() && isDevSocketConnected())
+ 				{
+ 					err = ERR_NET_TIMEOUT;
+ 				}
+@@ -937,7 +970,7 @@ bool NetDaqDevice::isDevSocketConnected() const
  
  	bool connected = false;
  
@@ -242,7 +276,7 @@ index e844c9d..2809ec1 100644
  
  	if(err == ERR_NET_DEV_IN_USE)
  		connected = true;
-@@ -1045,7 +1076,7 @@ void NetDaqDevice::closeDataSocketFromDevice() const
+@@ -1045,7 +1078,7 @@ void NetDaqDevice::closeDataSocketFromDevice() const
  	queryCmd(cmd, &closeSocket, sizeof(closeSocket));
  }
  
@@ -251,7 +285,7 @@ index e844c9d..2809ec1 100644
  {
  	UlError err = ERR_NO_ERROR;
  
-@@ -1063,7 +1094,7 @@ UlError NetDaqDevice::sendConnectionCode() const
+@@ -1063,7 +1096,7 @@ UlError NetDaqDevice::sendConnectionCode() const
  	unsigned char buffer[2];
  	unsigned int bufferLen = 2;
  
@@ -260,7 +294,7 @@ index e844c9d..2809ec1 100644
  
  
  	if(err == ERR_NO_ERROR)
-@@ -1361,6 +1392,32 @@ void NetDaqDevice::setCfg_Reset()
+@@ -1361,6 +1394,32 @@ void NetDaqDevice::setCfg_Reset()
  	resetDevice();
  }
  
@@ -294,10 +328,21 @@ index e844c9d..2809ec1 100644
  {
  	std::cerr << "setsockopt() failed, error: " << strerror(errnum) << " file: " << file << " line: " << line << std::endl;
 diff --git src/net/NetDaqDevice.h src/net/NetDaqDevice.h
-index 1c02056..2c6e9f8 100644
+index 1c02056..9da8954 100644
 --- src/net/NetDaqDevice.h
 +++ src/net/NetDaqDevice.h
-@@ -61,6 +61,10 @@ public:
+@@ -40,6 +40,10 @@ public:
+ 	virtual bool isDataSocketReady() const;
+ 	virtual void flushCmdSocket() const;
+ 
++	// A command that fails to receive a response is followed by a state query to the device, which waits for the
++	// connection timeout. A device that returns false ends the failed command within the command timeout.
++	virtual bool queriesStateAfterFailedCommand() const { return true; }
++
+ 	void queryCmd(unsigned char cmd) const;
+ 	void queryCmd(unsigned char cmd, unsigned char* sendBuf, unsigned short sendBufLen) const;
+ 	void queryCmd(unsigned char cmd, unsigned char* sendBuf, unsigned short sendBufLen, unsigned char* status) const;
+@@ -61,6 +65,10 @@ public:
  	virtual long long getCfg_MemUnlockCode() const;
  	virtual void setCfg_MemUnlockCode(long long code);
  	virtual void setCfg_Reset();
@@ -308,7 +353,7 @@ index 1c02056..2c6e9f8 100644
  
  	virtual void getCfg_IpAddress(char* address, unsigned int* maxStrLen) const;
  	virtual void getCfg_NetIfcName(char* ifcName, unsigned int* maxStrLen) const;
-@@ -79,7 +83,7 @@ private:
+@@ -79,7 +87,7 @@ private:
  	void releaseNetResources();
  
  	UlError initUdpSocket(const NetDiscovery::NetIfcDesc& ifcDesc, const NetDiscovery::NetDiscoveryInfo& discoveryInfo) const;
@@ -317,7 +362,7 @@ index 1c02056..2c6e9f8 100644
  
  	void closeSockets();
  	void resetDevice();
-@@ -97,9 +101,9 @@ private:
+@@ -97,9 +105,9 @@ private:
  
  	void clearSocketInputQueue() const;
  
@@ -361,10 +406,10 @@ index 288c12f..8a648de 100644
  			default:
  				error = ERR_BAD_CONFIG_ITEM;
 diff --git src/uldaq.h src/uldaq.h
-index 40c2744..cb0209e 100644
+index 40c2744..8ec91a1 100644
 --- src/uldaq.h
 +++ src/uldaq.h
-@@ -1849,7 +1849,20 @@ typedef enum
+@@ -1849,7 +1849,23 @@ typedef enum
  	DEV_CFG_MEM_UNLOCK_CODE = 3,
  
  	/** Resets the DAQ device, this causes the DAQ device to disconnect from the host, ulConnectDaqDevice() must be invoked to re-establish the connection*/
@@ -373,14 +418,17 @@ index 40c2744..cb0209e 100644
 +
 +	/** The network connection timeout in milliseconds, supported by Ethernet DAQ devices; the default is 3000. The value must be greater than zero.
 +	 * It bounds the steps that establish the connection in ulConnectDaqDevice() (the MAC address query, the connection code query and the TCP connect),
-+	 * and the connection state query that follows a failed command. The value can be set before ulConnectDaqDevice() and takes effect from the next
-+	 * connection attempt. It belongs to the device object and is lost when the device is released with ulReleaseDaqDevice().
++	 * and, for the devices other than the TC-32 and the E-TC, the connection state query that follows a failed command. The value can be set before
++	 * ulConnectDaqDevice() and takes effect from the next connection attempt. It belongs to the device object and is lost when the device is released
++	 * with ulReleaseDaqDevice().
 +	 */
 +	DEV_CFG_NET_CONNECT_TIMEOUT = 5,
 +
 +	/** The network command timeout in milliseconds, supported by Ethernet DAQ devices; the default is 3000. The value must be greater than zero.
 +	 * It limits the wait for each command, including the commands that ulConnectDaqDevice() sends after the connection is established, and takes
-+	 * effect from the next command. It belongs to the device object and is lost when the device is released with ulReleaseDaqDevice().
++	 * effect from the next command. A command of the TC-32 or the E-TC that gets no response ends after this wait with #ERR_DEV_NOT_CONNECTED; the
++	 * other devices follow it with the connection state query. It belongs to the device object and is lost when the device is released with
++	 * ulReleaseDaqDevice().
 +	 */
 +	DEV_CFG_NET_COMMAND_TIMEOUT = 6
  

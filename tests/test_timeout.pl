@@ -35,6 +35,7 @@ use constant OVERSHOOT_RATE => 0.125;
 use constant OVERSHOOT_MS   => 100;
 use constant REPLY_BOUND_S  => 30;
 use constant CMD_DIN        => 0x00;
+use constant ERR_DEV_NOT_CONNECTED => 7;
 
 my $USAGE = "Usage: test_timeout.pl --prefix DIR --workspace DIR\n"
     . "  --prefix DIR     installation prefix of the patched library (include and lib)\n"
@@ -253,7 +254,8 @@ sub scenario {
     check('configured connect time', within_window($fields[2], 700), window_detail($fields[2], 700));
     $fixture->{online} = 1;
 
-    # A command to a device that stops answering takes the command timeout plus the connection
+    # A command of the TC32 to a device that stops answering ends after the command timeout with
+    # ERR_DEV_NOT_CONNECTED and is not followed by a state query that waits for the connection
     # timeout: connection 600 ms, command 400 ms.
     ask('set connect 600');
     ask('set command 400');
@@ -263,7 +265,8 @@ sub scenario {
     $fixture->{fault} = [CMD_DIN, 'timeout'];
     @fields = ask('din');
     check('command to a silent device fails', $fields[1] != 0, "error=$fields[1]");
-    check('silent command time', within_window($fields[2], 1000), window_detail($fields[2], 1000));
+    check('silent command returns ERR_DEV_NOT_CONNECTED', $fields[1] == ERR_DEV_NOT_CONNECTED, "error=$fields[1] expected=" . ERR_DEV_NOT_CONNECTED);
+    check('silent command time', within_window($fields[2], 400), window_detail($fields[2], 400));
     my @reached = grep { $_->[0] == CMD_DIN && $_->[1] eq 'timeout' } @{$fixture->{faults}}[$faults_before .. $#{$fixture->{faults}}];
     check('the timeout fault reached the device', scalar(@reached) == 1, 'faults=' . scalar(@reached));
 

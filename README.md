@@ -34,17 +34,19 @@ The patched library adds two configuration items for network devices, set with
 
 | Item | Value | Default | Bounds |
 | --- | --- | --- | --- |
-| `DEV_CFG_NET_CONNECT_TIMEOUT` | milliseconds, 1 to 2147483647 | 3000 | The steps of `ulConnectDaqDevice()` that establish the connection (the MAC address query, the connection code query and the TCP connect) share one deadline taken from a monotonic clock, and the connection state query that follows a failed command |
+| `DEV_CFG_NET_CONNECT_TIMEOUT` | milliseconds, 1 to 2147483647 | 3000 | The steps of `ulConnectDaqDevice()` that establish the connection (the MAC address query, the connection code query and the TCP connect) share one deadline taken from a monotonic clock, and, for the devices other than the TC-32 and the E-TC, the connection state query that follows a failed command |
 | `DEV_CFG_NET_COMMAND_TIMEOUT` | milliseconds, 1 to 2147483647 | 3000 | The wait for each command, including the commands that `ulConnectDaqDevice()` sends after the connection is established |
 
 A value outside the range returns `ERR_BAD_CONFIG_VAL` and leaves the stored value
 unchanged; a USB device returns `ERR_BAD_DEV_TYPE`. Both items can be set after
 `ulCreateDaqDevice()` and before `ulConnectDaqDevice()`. They belong to the device
 object: they stay while the same handle is connected again and are lost when the
-handle is released with `ulReleaseDaqDevice()`. A command to a device that stops
-answering takes the command timeout followed by the connection state query, so up to
-the command timeout plus the connection timeout. The kernel rounds a socket timeout up
-by at most 12.5 percent, so a wait of several seconds can end later than its value.
+handle is released with `ulReleaseDaqDevice()`. A command of the TC-32 or the E-TC to
+a device that stops answering ends after the command timeout with `ERR_DEV_NOT_CONNECTED`.
+The other network devices follow the failed command with the connection state query,
+so it takes up to the command timeout plus the connection timeout, and they return
+`ERR_NET_TIMEOUT` when the device still answers the query. The kernel rounds a socket
+timeout up by at most 12.5 percent, so a wait of several seconds can end later than its value.
 
 ```c
 ulDevSetConfig(handle, DEV_CFG_NET_CONNECT_TIMEOUT, 0, 500);

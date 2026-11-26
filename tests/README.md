@@ -109,7 +109,7 @@ fixture states Perl 5.26 or newer), `g++`, `ip`, and `unshare`. Exit status 0 is
 | Set and read | none | The set values are read back |
 | Invalid values | `0`, `-1`, `2147483648` | `ERR_BAD_CONFIG_VAL`, stored values unchanged |
 | Connect bound | device does not answer UDP queries | `ulConnectDaqDevice()` fails within the window of the connection timeout: 700 ms with the command timeout set to 300 ms (a step that still used the command timeout would end early), and the default 3000 ms |
-| Command bound | device accepts a command and stops answering | The command fails within the window of the command timeout plus the connection timeout (400 ms and 600 ms) |
+| Command bound | device accepts a command and stops answering | The command fails with `ERR_DEV_NOT_CONNECTED` within the window of the command timeout alone (400 ms, with the connection timeout set to 600 ms: a state query that waited for it would end later) |
 | Reconnect | none | The values stay when the same handle is connected again |
 | Exposure | the `timeout` fault | The fixture records the fault, and records no unsupported request |
 
@@ -118,7 +118,7 @@ A wait of expected length T must end no earlier than T minus 5 ms and no later t
 percent. A run keeps `checks.tsv`, `client.txt`, `commands.txt`, `library.txt` (resolved
 library path and SHA-256), and `result.txt` in the workspace.
 
-`timeout-mutations.json` lists five mutations of the patched `NetDaqDevice.cpp` with the
+`timeout-mutations.json` lists six mutations of the patched `NetDaqDevice.cpp` and `ETc32.h` with the
 expected failing checks. Build the scratch copies with `build-mutants.py` of the
 test-framework skill on a built source tree, rebuild each copy, and run the test against
 its library; a mutation counts only when the failing checks match the table and the
