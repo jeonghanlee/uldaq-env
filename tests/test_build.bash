@@ -8,9 +8,11 @@ set -euo pipefail
 readonly UPSTREAM_COMMIT="f87594f7db478adb736a7868859133c45b6ec6b7"
 readonly UPSTREAM_TAG="v1.2.2"
 readonly UPSTREAM_VERSION="1.2.2"
-readonly PATCH_NAME="1.2.2-tcp-receive.p0.patch"
+readonly PATCH_NAME="1.2.2-net-timeout.p0.patch"
 readonly CORRECTION="err = (received == 0) ? ERR_DEV_NOT_CONNECTED : ERR_DEAD_DEV;"
 readonly SOURCE_FILE="src/net/NetDaqDevice.cpp"
+readonly HEADER_FILE="src/uldaq.h"
+readonly DEADLINE_LINE="const long long deadline = monotonicMs() + mConnectionTimeout;"
 readonly RECORD_NAME="uldaq"
 readonly COMMAND_TIMEOUT=900
 readonly CHECK_PATTERN=$'\t\t\t// EOF or a short header cannot represent a complete response.\n\t\t\t'
@@ -263,7 +265,7 @@ function installed {
 }
 
 function patch_cycle {
-    local source original patched stripped
+    local source original patched header_text
 
     initialized_case "patch-cycle"
     source="$case_dir/uldaq-src/$SOURCE_FILE"
@@ -276,9 +278,12 @@ function patch_cycle {
 
     make_case "$case_dir" "$case_prefix" 0 patch.apply
     slurp patched "$source"
-    stripped="${patched/"${CHECK_PATTERN}${CORRECTION}"$'\n'/}"
     check "exact TCP correction" "patched differs from original" not_equal "$patched" "$original"
-    check "exact TCP correction removal" "only the correction block differs" equal "$stripped" "$original"
+    check "TCP correction block present" "$SOURCE_FILE" contains "$patched" "${CHECK_PATTERN}${CORRECTION}"
+    check "connection deadline present" "$SOURCE_FILE" contains "$patched" "$DEADLINE_LINE"
+    slurp header_text "$case_dir/uldaq-src/$HEADER_FILE"
+    check "connect timeout item present" "$HEADER_FILE" contains "$header_text" "DEV_CFG_NET_CONNECT_TIMEOUT = 5"
+    check "command timeout item present" "$HEADER_FILE" contains "$header_text" "DEV_CFG_NET_COMMAND_TIMEOUT = 6"
     cp -p "$source" "$workspace/patch-cycle-patched.cpp"
 
     make_case "$case_dir" "$case_prefix" 0 patch.apply

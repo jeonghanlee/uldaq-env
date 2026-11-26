@@ -5,16 +5,16 @@ define make_p0_patch
 endef
 
 define patch_src
-bash -p "$(TOP)/tools/apply_patch.bash" --fuzz=0 apply "$(SRC_PATH)" "$(TOP)/patch/$(SRC_VERSION)-tcp-receive.p0.patch"
+bash -p "$(TOP)/tools/apply_patch.bash" --fuzz=0 apply "$(SRC_PATH)" "$(TOP)/patch/$(SRC_VERSION)-net-timeout.p0.patch"
 endef
 
 
 define revert_patch_src
-bash -p "$(TOP)/tools/revert_patch.bash" "$(SRC_PATH)" "$(TOP)/patch/$(SRC_VERSION)-tcp-receive.p0.patch"
+bash -p "$(TOP)/tools/revert_patch.bash" "$(SRC_PATH)" "$(TOP)/patch/$(SRC_VERSION)-net-timeout.p0.patch"
 endef
 
 define check_patch_src
-bash -p "$(TOP)/tools/apply_patch.bash" --fuzz=0 check "$(SRC_PATH)" "$(TOP)/patch/$(SRC_VERSION)-tcp-receive.p0.patch"
+bash -p "$(TOP)/tools/apply_patch.bash" --fuzz=0 check "$(SRC_PATH)" "$(TOP)/patch/$(SRC_VERSION)-net-timeout.p0.patch"
 endef
 
 GIT_VERSION:=$(lastword $(shell git --version))

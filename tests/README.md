@@ -32,7 +32,7 @@ The suite requires Bash 4.4 or newer. Exit status 0 is Passed, 1 is Failed, and
 | Case | Real Path | Required Result |
 | --- | --- | --- |
 | Source identity | `init` and upstream Git checkout | Expected 1.2.2 commit |
-| Patch lifecycle | Apply, apply again, revert, reapply | Exact two-line correction, idempotence, byte-exact restoration and reapplication |
+| Patch lifecycle | Apply, apply again, revert, reapply | The receive correction block, the connection deadline and both timeout configuration items present after apply; idempotence, byte-exact restoration and reapplication |
 | Unpatched source | Direct `build` and `install` | Nonzero exit with the required-patch diagnostic |
 | Invalid required patch | Missing, empty, and incompatible patch through `build`, `all`, `github`, and `install` | Nonzero exit and the required-patch diagnostic before configuration, compilation, or installation |
 | Direct workflow | `init`, configuration, `build`, `install`; original and prepatched source | Corrected installed headers and shared library |
@@ -83,6 +83,50 @@ privilege variable to always use `sudo` (ownership assertion), write a patch
 line for a patch that is not applied, and drop the `patch=unknown` line for an
 unclassifiable patch. A failure at an unrelated setup step does not
 establish a regression.
+
+## Timeout Test
+
+`test_timeout.pl` checks the network timeout configuration items against an installed
+patched library. The library and the client calls are real; only the external TC32
+endpoint is simulated, by `fixtures/TC32.pm` (a copy of the measComp fixture; the origin
+commit and SHA-256 are in `fixtures/TC32.pm.source`). The test is not part of the
+continuous-integration workflows, because it needs a network namespace.
+
+```bash
+perl tests/test_timeout.pl --prefix /opt/uldaq --workspace /tmp/uldaq-timeout-check
+```
+
+The prefix holds `include/uldaq.h` and `lib/libuldaq.so`. The script re-executes itself
+under `unshare -Urn`, creates the dummy interface `sim0` and the fixture address on `lo`,
+compiles `timeout_client.cpp` against the library, and drives the client through a line
+protocol while it serves the fixture. Requirements: Perl with core modules only (the
+fixture states Perl 5.26 or newer), `g++`, `ip`, and `unshare`. Exit status 0 is Passed,
+1 is Failed, 2 is Incomplete.
+
+| Claim | Fault | Required result |
+| --- | --- | --- |
+| Defaults | none | Both items read 3000 |
+| Set and read | none | The set values are read back |
+| Invalid values | `0`, `-1`, `2147483648` | `ERR_BAD_CONFIG_VAL`, stored values unchanged |
+| Connect bound | device does not answer UDP queries | `ulConnectDaqDevice()` fails within the window of the connection timeout: 700 ms with the command timeout set to 300 ms (a step that still used the command timeout would end early), and the default 3000 ms |
+| Command bound | device accepts a command and stops answering | The command fails within the window of the command timeout plus the connection timeout (400 ms and 600 ms) |
+| Reconnect | none | The values stay when the same handle is connected again |
+| Exposure | the `timeout` fault | The fixture records the fault, and records no unsupported request |
+
+A wait of expected length T must end no earlier than T minus 5 ms and no later than
+1.125 T plus 100 ms: the kernel timer wheel rounds a socket timeout up by at most 12.5
+percent. A run keeps `checks.tsv`, `client.txt`, `commands.txt`, `library.txt` (resolved
+library path and SHA-256), and `result.txt` in the workspace.
+
+`timeout-mutations.json` lists five mutations of the patched `NetDaqDevice.cpp` with the
+expected failing checks. Build the scratch copies with `build-mutants.py` of the
+test-framework skill on a built source tree, rebuild each copy, and run the test against
+its library; a mutation counts only when the failing checks match the table and the
+source hash read by the build equals `mutated_sha256`.
+
+Not covered: the TCP connect step (the fixture cannot drop the SYN packet separately from
+the UDP queries), the connection code query as the step that ends the wait, USB devices,
+and real hardware.
 
 ## Transport Verification Boundary
 

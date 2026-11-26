@@ -21,10 +21,36 @@ apt install autoconf libtool libusb-1.0-0-dev patch
 This repository helps to build the `uldaq` package and its customized application consistently on Linux and macOS.
 
 The default source is ULDAQ 1.2.2, upstream commit
-`f87594f7db478adb736a7868859133c45b6ec6b7`. The required TCP receive patch
-reports EOF and incomplete response headers as errors. Its filename uses
-`SRC_VERSION`, independently of the slash in `SRC_TAG=tags/v1.2.2`, and its
-paths are relative to the source root (`-p0`).
+`f87594f7db478adb736a7868859133c45b6ec6b7`. The required patch
+`1.2.2-net-timeout.p0.patch` reports EOF and incomplete response headers as
+errors and adds the network timeout configuration items described below. Its
+filename uses `SRC_VERSION`, independently of the slash in `SRC_TAG=tags/v1.2.2`,
+and its paths are relative to the source root (`-p0`).
+
+### Network timeouts
+
+The patched library adds two configuration items for network devices, set with
+`ulDevSetConfig()` and read with `ulDevGetConfig()`; the `index` argument is ignored.
+
+| Item | Value | Default | Bounds |
+| --- | --- | --- | --- |
+| `DEV_CFG_NET_CONNECT_TIMEOUT` | milliseconds, 1 to 2147483647 | 3000 | The steps of `ulConnectDaqDevice()` that establish the connection (the MAC address query, the connection code query and the TCP connect) share one deadline taken from a monotonic clock, and the connection state query that follows a failed command |
+| `DEV_CFG_NET_COMMAND_TIMEOUT` | milliseconds, 1 to 2147483647 | 3000 | The wait for each command, including the commands that `ulConnectDaqDevice()` sends after the connection is established |
+
+A value outside the range returns `ERR_BAD_CONFIG_VAL` and leaves the stored value
+unchanged; a USB device returns `ERR_BAD_DEV_TYPE`. Both items can be set after
+`ulCreateDaqDevice()` and before `ulConnectDaqDevice()`. They belong to the device
+object: they stay while the same handle is connected again and are lost when the
+handle is released with `ulReleaseDaqDevice()`. A command to a device that stops
+answering takes the command timeout followed by the connection state query, so up to
+the command timeout plus the connection timeout. The kernel rounds a socket timeout up
+by at most 12.5 percent, so a wait of several seconds can end later than its value.
+
+```c
+ulDevSetConfig(handle, DEV_CFG_NET_CONNECT_TIMEOUT, 0, 500);
+ulDevSetConfig(handle, DEV_CFG_NET_COMMAND_TIMEOUT, 0, 500);
+ulConnectDaqDevice(handle);
+```
 
 `conf`, `debugconf`, `conf.rocky8`, and `conf.rocky10` apply the patch before
 configuration. `build` and `install` check that it is present in the source

@@ -1,0 +1,44 @@
+{
+  "mutations": [
+    {
+      "id": "M1-mac-query-uses-command-timeout",
+      "file": "src/net/NetDaqDevice.cpp",
+      "old": "if(isValidDevice(discoveryInfo.macAddr, remainingMs(deadline)))",
+      "new": "if(isValidDevice(discoveryInfo.macAddr, mIoTimeout))",
+      "intended": ["configured connect time"],
+      "also": []
+    },
+    {
+      "id": "M2-state-query-uses-command-timeout",
+      "file": "src/net/NetDaqDevice.cpp",
+      "old": "UlError err = sendConnectionCode(mConnectionTimeout);",
+      "new": "UlError err = sendConnectionCode(mIoTimeout);",
+      "intended": ["silent command time"],
+      "also": []
+    },
+    {
+      "id": "M3-command-setter-ignores-value",
+      "file": "src/net/NetDaqDevice.cpp",
+      "old": "mIoTimeout = (int) timeout;",
+      "new": "(void) timeout;",
+      "intended": ["read back both timeouts"],
+      "also": ["rejected values leave the timeouts unchanged", "silent command time", "values kept after reconnect"]
+    },
+    {
+      "id": "M4-connect-setter-ignores-value",
+      "file": "src/net/NetDaqDevice.cpp",
+      "old": "mConnectionTimeout = (int) timeout;",
+      "new": "(void) timeout;",
+      "intended": ["read back both timeouts"],
+      "also": ["rejected values leave the timeouts unchanged", "configured connect time", "silent command time", "values kept after reconnect"]
+    },
+    {
+      "id": "M5-connect-validation-removed",
+      "file": "src/net/NetDaqDevice.cpp",
+      "old": "if(timeout < 1 || timeout > INT_MAX)\n\t\tthrow UlException(ERR_BAD_CONFIG_VAL);\n\n\tmConnectionTimeout = (int) timeout;",
+      "new": "mConnectionTimeout = (int) timeout;",
+      "intended": ["connection timeout 0 rejected"],
+      "also": ["connection timeout -1 rejected", "connection timeout 2147483648 rejected", "rejected values leave the timeouts unchanged", "configured connect time"]
+    }
+  ]
+}

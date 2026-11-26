@@ -1,0 +1,388 @@
+diff --git src/DaqDevice.cpp src/DaqDevice.cpp
+index 413d596..695b6c3 100644
+--- src/DaqDevice.cpp
++++ src/DaqDevice.cpp
+@@ -662,6 +662,26 @@ void DaqDevice::setCfg_Reset()
+ 	throw UlException(ERR_BAD_DEV_TYPE);
+ }
+ 
++long long DaqDevice::getCfg_NetConnectTimeout() const
++{
++	throw UlException(ERR_BAD_DEV_TYPE);
++}
++
++void DaqDevice::setCfg_NetConnectTimeout(long long timeout)
++{
++	throw UlException(ERR_BAD_DEV_TYPE);
++}
++
++long long DaqDevice::getCfg_NetCommandTimeout() const
++{
++	throw UlException(ERR_BAD_DEV_TYPE);
++}
++
++void DaqDevice::setCfg_NetCommandTimeout(long long timeout)
++{
++	throw UlException(ERR_BAD_DEV_TYPE);
++}
++
+ void DaqDevice::getCfg_IpAddress(char* address, unsigned int* maxStrLen) const
+ {
+ 	throw UlException(ERR_BAD_DEV_TYPE);
+diff --git src/DaqDevice.h src/DaqDevice.h
+index 6153233..023357e 100644
+--- src/DaqDevice.h
++++ src/DaqDevice.h
+@@ -131,6 +131,10 @@ public:
+ 	virtual long long getCfg_MemUnlockCode() const;
+ 	virtual void setCfg_MemUnlockCode(long long code);
+ 	virtual void setCfg_Reset();
++	virtual long long getCfg_NetConnectTimeout() const;
++	virtual void setCfg_NetConnectTimeout(long long timeout);
++	virtual long long getCfg_NetCommandTimeout() const;
++	virtual void setCfg_NetCommandTimeout(long long timeout);
+ 
+ protected:
+ 	void setMinRawFwVersion(unsigned short ver) { mMinRawFwVersion = ver;}
+diff --git src/DaqDeviceConfig.cpp src/DaqDeviceConfig.cpp
+index 4920735..ce1fae8 100644
+--- src/DaqDeviceConfig.cpp
++++ src/DaqDeviceConfig.cpp
+@@ -45,6 +45,25 @@ void DaqDeviceConfig::reset()
+ 	mDaqDevice.setCfg_Reset();
+ }
+ 
++void DaqDeviceConfig::setNetConnectTimeout(long long timeout)
++{
++	mDaqDevice.setCfg_NetConnectTimeout(timeout);
++}
++
++long long DaqDeviceConfig::getNetConnectTimeout()
++{
++	return mDaqDevice.getCfg_NetConnectTimeout();
++}
++
++void DaqDeviceConfig::setNetCommandTimeout(long long timeout)
++{
++	mDaqDevice.setCfg_NetCommandTimeout(timeout);
++}
++
++long long DaqDeviceConfig::getNetCommandTimeout()
++{
++	return mDaqDevice.getCfg_NetCommandTimeout();
++}
+ 
+ void DaqDeviceConfig::getVersionStr(DevVersionType verType, char* verStr, unsigned int* maxStrLen)
+ {
+diff --git src/DaqDeviceConfig.h src/DaqDeviceConfig.h
+index afd62f8..8667ea4 100644
+--- src/DaqDeviceConfig.h
++++ src/DaqDeviceConfig.h
+@@ -24,6 +24,10 @@ public:
+ 	virtual void setMemUnlockCode(long long code);
+ 	virtual long long getMemUnlockCode();
+ 	virtual void reset();
++	virtual void setNetConnectTimeout(long long timeout);
++	virtual long long getNetConnectTimeout();
++	virtual void setNetCommandTimeout(long long timeout);
++	virtual long long getNetCommandTimeout();
+ 
+ 	virtual void getVersionStr(DevVersionType verType, char* verStr, unsigned int* maxStrLen);
+ 	virtual bool hasExp();
+diff --git src/interfaces/UlDaqDeviceConfig.h src/interfaces/UlDaqDeviceConfig.h
+index eed9c77..18c73ff 100644
+--- src/interfaces/UlDaqDeviceConfig.h
++++ src/interfaces/UlDaqDeviceConfig.h
+@@ -22,6 +22,10 @@ public:
+ 	virtual void setMemUnlockCode(long long code) = 0;
+ 	virtual long long getMemUnlockCode() = 0;
+ 	virtual void reset() = 0;
++	virtual void setNetConnectTimeout(long long timeout) = 0;
++	virtual long long getNetConnectTimeout() = 0;
++	virtual void setNetCommandTimeout(long long timeout) = 0;
++	virtual long long getNetCommandTimeout() = 0;
+ 
+ 
+ 	virtual void getVersionStr(DevVersionType verType, char* verStr, unsigned int* maxStrLen) = 0;
+diff --git src/net/NetDaqDevice.cpp src/net/NetDaqDevice.cpp
+index e844c9d..2809ec1 100644
+--- src/net/NetDaqDevice.cpp
++++ src/net/NetDaqDevice.cpp
+@@ -10,10 +10,35 @@
+ #include "NetScanTransferIn.h"
+ 
+ #include <numeric>
++#include <limits.h>
++#include <time.h>
+ 
+ namespace ul
+ {
+ 
++// Monotonic time in milliseconds, not affected by wall clock changes.
++static long long monotonicMs()
++{
++	timespec ts;
++	clock_gettime(CLOCK_MONOTONIC, &ts);
++
++	return (long long) ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
++}
++
++// Time left until the deadline in milliseconds. The result is never less than 1 because a zero socket timeout waits forever.
++static int remainingMs(long long deadline)
++{
++	long long left = deadline - monotonicMs();
++
++	if(left < 1)
++		left = 1;
++
++	if(left > INT_MAX)
++		left = INT_MAX;
++
++	return (int) left;
++}
++
+ NetDaqDevice::NetDaqDevice(const DaqDeviceDescriptor& daqDeviceDescriptor) : DaqDevice(daqDeviceDescriptor)
+ {
+ 	mConnectionCode = 0;
+@@ -116,6 +141,9 @@ void NetDaqDevice::establishConnection()
+ {
+ 	FnLog log("NetDaqDevice::establishConnection");
+ 
++	// the steps that establish the connection share one deadline, so together they take no longer than the connection timeout
++	const long long deadline = monotonicMs() + mConnectionTimeout;
++
+ 	NetDiscovery::NetDiscoveryInfo discoveryInfo = NetDiscovery::getDiscoveryInfo(mDaqDeviceDescriptor.uniqueId);
+ 
+ 	if(!discoveryInfo.valid)
+@@ -134,9 +162,9 @@ void NetDaqDevice::establishConnection()
+ 				// make sure the mac address of the connected device match what we are looking for. This check is performed
+ 				// to make sure that the DHCP server has not assigned the ip address of the target device to another device since
+ 				// user has called getDeviceInventory
+-				if(isValidDevice(discoveryInfo.macAddr))
++				if(isValidDevice(discoveryInfo.macAddr, remainingMs(deadline)))
+ 				{
+-					err = initTcpCmdSocket(ifcDesc, discoveryInfo);
++					err = initTcpCmdSocket(ifcDesc, discoveryInfo, deadline);
+ 
+ 					if(!err)
+ 					{
+@@ -204,11 +232,11 @@ UlError NetDaqDevice::initUdpSocket(const NetDiscovery::NetIfcDesc& ifcDesc, con
+ 	return err;
+ }
+ 
+-UlError NetDaqDevice::initTcpCmdSocket(const NetDiscovery::NetIfcDesc& ifcDesc, const NetDiscovery::NetDiscoveryInfo& discoveryInfo) const
++UlError NetDaqDevice::initTcpCmdSocket(const NetDiscovery::NetIfcDesc& ifcDesc, const NetDiscovery::NetDiscoveryInfo& discoveryInfo, long long deadline) const
+ {
+ 	FnLog log("NetDaqDevice::initTcpCmdSocket");
+ 
+-	UlError err = sendConnectionCode();
++	UlError err = sendConnectionCode(remainingMs(deadline));
+ 
+ 	if(err)
+ 		return err;
+@@ -231,7 +259,8 @@ UlError NetDaqDevice::initTcpCmdSocket(const NetDiscovery::NetIfcDesc& ifcDesc,
+ 		 if(setsockopt(mSockets.tcpCmd, SOL_SOCKET, SO_KEEPALIVE, &keepAlive, sizeof(keepAlive)) == -1)
+ 			 print_setsockopt_error(errno, __FILE__, __LINE__);
+ 
+-		 timeval to = NetDiscovery::convertTimeout(mConnectionTimeout);
++		 // the blocking connect() below waits for the send timeout, so it gets the time that remains of the connection deadline
++		 timeval to = NetDiscovery::convertTimeout(remainingMs(deadline));
+ 		 if(setsockopt(mSockets.tcpCmd, SOL_SOCKET, SO_SNDTIMEO, &to, sizeof(to)) == -1)
+ 			 print_setsockopt_error(errno, __FILE__, __LINE__);
+ 
+@@ -336,7 +365,7 @@ UlError NetDaqDevice::initTcpDataSocket(int timeout /* ms */) const
+ 	return err;
+ }
+ 
+-std::string NetDaqDevice::getMacAddress()
++std::string NetDaqDevice::getMacAddress(int timeout /* ms */)
+ {
+ 	std::string macAddr = "";
+ 
+@@ -347,7 +376,7 @@ std::string NetDaqDevice::getMacAddress()
+ 
+ 	unsigned int bufferLen =  NetDiscovery::UDP_MSG_MAX_LEN;
+ 
+-	UlError err = queryUdp(&sendBuf, sizeof(sendBuf), buffer, &bufferLen, mIoTimeout);
++	UlError err = queryUdp(&sendBuf, sizeof(sendBuf), buffer, &bufferLen, timeout);
+ 
+ 	if(err == ERR_NO_ERROR)
+ 	{
+@@ -362,13 +391,13 @@ std::string NetDaqDevice::getMacAddress()
+ 	return macAddr;
+ }
+ 
+-bool NetDaqDevice::isValidDevice(std::string macAddr)
++bool NetDaqDevice::isValidDevice(std::string macAddr, int timeout /* ms */)
+ {
+ 	FnLog log("NetDaqDevice::isValidDevice");
+ 
+ 	bool validDev = false;
+ 
+-	std::string devMacAddr = getMacAddress();
++	std::string devMacAddr = getMacAddress(timeout);
+ 
+ 	if(macAddr == devMacAddr)
+ 		validDev = true;
+@@ -667,6 +696,8 @@ UlError NetDaqDevice::receiveFrame(unsigned char cmd, unsigned char frameId, uns
+ 		}
+ 		else
+ 		{
++			// EOF or a short header cannot represent a complete response.
++			err = (received == 0) ? ERR_DEV_NOT_CONNECTED : ERR_DEAD_DEV;
+ 			if(received == -1)
+ 			{
+ 				UL_LOG("receiveFrame failed, recv() error: " << strerror(errno));
+@@ -937,7 +968,7 @@ bool NetDaqDevice::isDevSocketConnected() const
+ 
+ 	bool connected = false;
+ 
+-	UlError err = sendConnectionCode();
++	UlError err = sendConnectionCode(mConnectionTimeout);
+ 
+ 	if(err == ERR_NET_DEV_IN_USE)
+ 		connected = true;
+@@ -1045,7 +1076,7 @@ void NetDaqDevice::closeDataSocketFromDevice() const
+ 	queryCmd(cmd, &closeSocket, sizeof(closeSocket));
+ }
+ 
+-UlError NetDaqDevice::sendConnectionCode() const
++UlError NetDaqDevice::sendConnectionCode(int timeout /* ms */) const
+ {
+ 	UlError err = ERR_NO_ERROR;
+ 
+@@ -1063,7 +1094,7 @@ UlError NetDaqDevice::sendConnectionCode() const
+ 	unsigned char buffer[2];
+ 	unsigned int bufferLen = 2;
+ 
+-	err = queryUdp((char*) &sendBuf, sizeof(sendBuf), (char*) buffer, &bufferLen, mConnectionTimeout);
++	err = queryUdp((char*) &sendBuf, sizeof(sendBuf), (char*) buffer, &bufferLen, timeout);
+ 
+ 
+ 	if(err == ERR_NO_ERROR)
+@@ -1361,6 +1392,32 @@ void NetDaqDevice::setCfg_Reset()
+ 	resetDevice();
+ }
+ 
++long long NetDaqDevice::getCfg_NetConnectTimeout() const
++{
++	return mConnectionTimeout;
++}
++
++void NetDaqDevice::setCfg_NetConnectTimeout(long long timeout)
++{
++	if(timeout < 1 || timeout > INT_MAX)
++		throw UlException(ERR_BAD_CONFIG_VAL);
++
++	mConnectionTimeout = (int) timeout;
++}
++
++long long NetDaqDevice::getCfg_NetCommandTimeout() const
++{
++	return mIoTimeout;
++}
++
++void NetDaqDevice::setCfg_NetCommandTimeout(long long timeout)
++{
++	if(timeout < 1 || timeout > INT_MAX)
++		throw UlException(ERR_BAD_CONFIG_VAL);
++
++	mIoTimeout = (int) timeout;
++}
++
+ void NetDaqDevice::print_setsockopt_error(int errnum, const char* file, int line) const
+ {
+ 	std::cerr << "setsockopt() failed, error: " << strerror(errnum) << " file: " << file << " line: " << line << std::endl;
+diff --git src/net/NetDaqDevice.h src/net/NetDaqDevice.h
+index 1c02056..2c6e9f8 100644
+--- src/net/NetDaqDevice.h
++++ src/net/NetDaqDevice.h
+@@ -61,6 +61,10 @@ public:
+ 	virtual long long getCfg_MemUnlockCode() const;
+ 	virtual void setCfg_MemUnlockCode(long long code);
+ 	virtual void setCfg_Reset();
++	virtual long long getCfg_NetConnectTimeout() const;
++	virtual void setCfg_NetConnectTimeout(long long timeout);
++	virtual long long getCfg_NetCommandTimeout() const;
++	virtual void setCfg_NetCommandTimeout(long long timeout);
+ 
+ 	virtual void getCfg_IpAddress(char* address, unsigned int* maxStrLen) const;
+ 	virtual void getCfg_NetIfcName(char* ifcName, unsigned int* maxStrLen) const;
+@@ -79,7 +83,7 @@ private:
+ 	void releaseNetResources();
+ 
+ 	UlError initUdpSocket(const NetDiscovery::NetIfcDesc& ifcDesc, const NetDiscovery::NetDiscoveryInfo& discoveryInfo) const;
+-	UlError initTcpCmdSocket(const NetDiscovery::NetIfcDesc& ifcDesc, const NetDiscovery::NetDiscoveryInfo& discoveryInfo) const;
++	UlError initTcpCmdSocket(const NetDiscovery::NetIfcDesc& ifcDesc, const NetDiscovery::NetDiscoveryInfo& discoveryInfo, long long deadline /* monotonic ms */) const;
+ 
+ 	void closeSockets();
+ 	void resetDevice();
+@@ -97,9 +101,9 @@ private:
+ 
+ 	void clearSocketInputQueue() const;
+ 
+-	std::string getMacAddress();
+-	bool isValidDevice(std::string macAddr);
+-	UlError sendConnectionCode() const;
++	std::string getMacAddress(int timeout /* ms */);
++	bool isValidDevice(std::string macAddr, int timeout /* ms */);
++	UlError sendConnectionCode(int timeout /* ms */) const;
+ 	bool isDevSocketConnected() const;
+ 	virtual void closeDataSocketFromDevice() const;
+ 
+diff --git src/ulc.cpp src/ulc.cpp
+index 288c12f..8a648de 100644
+--- src/ulc.cpp
++++ src/ulc.cpp
+@@ -2773,6 +2773,12 @@ UlError ulDevSetConfig(DaqDeviceHandle daqDeviceHandle, DevConfigItem configItem
+ 			case DEV_CFG_RESET:
+ 				devConfig.reset();
+ 				break;
++			case DEV_CFG_NET_CONNECT_TIMEOUT:
++				devConfig.setNetConnectTimeout(configValue);
++				break;
++			case DEV_CFG_NET_COMMAND_TIMEOUT:
++				devConfig.setNetCommandTimeout(configValue);
++				break;
+ 
+ 			default:
+ 				error = ERR_BAD_CONFIG_ITEM;
+@@ -2818,6 +2824,12 @@ UlError ulDevGetConfig(DaqDeviceHandle daqDeviceHandle, DevConfigItem configItem
+ 			case DEV_CFG_MEM_UNLOCK_CODE:
+ 				*configValue = devConfig.getMemUnlockCode();
+ 				break;
++			case DEV_CFG_NET_CONNECT_TIMEOUT:
++				*configValue = devConfig.getNetConnectTimeout();
++				break;
++			case DEV_CFG_NET_COMMAND_TIMEOUT:
++				*configValue = devConfig.getNetCommandTimeout();
++				break;
+ 
+ 			default:
+ 				error = ERR_BAD_CONFIG_ITEM;
+diff --git src/uldaq.h src/uldaq.h
+index 40c2744..cb0209e 100644
+--- src/uldaq.h
++++ src/uldaq.h
+@@ -1849,7 +1849,20 @@ typedef enum
+ 	DEV_CFG_MEM_UNLOCK_CODE = 3,
+ 
+ 	/** Resets the DAQ device, this causes the DAQ device to disconnect from the host, ulConnectDaqDevice() must be invoked to re-establish the connection*/
+-	DEV_CFG_RESET = 4
++	DEV_CFG_RESET = 4,
++
++	/** The network connection timeout in milliseconds, supported by Ethernet DAQ devices; the default is 3000. The value must be greater than zero.
++	 * It bounds the steps that establish the connection in ulConnectDaqDevice() (the MAC address query, the connection code query and the TCP connect),
++	 * and the connection state query that follows a failed command. The value can be set before ulConnectDaqDevice() and takes effect from the next
++	 * connection attempt. It belongs to the device object and is lost when the device is released with ulReleaseDaqDevice().
++	 */
++	DEV_CFG_NET_CONNECT_TIMEOUT = 5,
++
++	/** The network command timeout in milliseconds, supported by Ethernet DAQ devices; the default is 3000. The value must be greater than zero.
++	 * It limits the wait for each command, including the commands that ulConnectDaqDevice() sends after the connection is established, and takes
++	 * effect from the next command. It belongs to the device object and is lost when the device is released with ulReleaseDaqDevice().
++	 */
++	DEV_CFG_NET_COMMAND_TIMEOUT = 6
+ 
+ }DevConfigItem;
+ 

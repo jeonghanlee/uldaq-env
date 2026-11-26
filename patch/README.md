@@ -11,7 +11,7 @@ tools of the patch skill; the `.source` file beside each copy records its origin
 
 | File | Pin | Fixes | Origin |
 | --- | --- | --- | --- |
-| `1.2.2-tcp-receive.p0.patch` | ULDAQ 1.2.2, tag `v1.2.2`, commit `f87594f7db478adb736a7868859133c45b6ec6b7` | `NetDaqDevice::receiveFrame` in `src/net/NetDaqDevice.cpp` reports EOF and an incomplete response header as an error (`ERR_DEV_NOT_CONNECTED` on EOF, `ERR_DEAD_DEV` otherwise) | uldaq-env issue 2; no upstream pull request or commit is recorded |
+| `1.2.2-net-timeout.p0.patch` | ULDAQ 1.2.2, tag `v1.2.2`, commit `f87594f7db478adb736a7868859133c45b6ec6b7` | `NetDaqDevice::receiveFrame` in `src/net/NetDaqDevice.cpp` reports EOF and an incomplete response header as an error (`ERR_DEV_NOT_CONNECTED` on EOF, `ERR_DEAD_DEV` otherwise). Configuration items `DEV_CFG_NET_CONNECT_TIMEOUT` and `DEV_CFG_NET_COMMAND_TIMEOUT` of network devices, in milliseconds, default 3000, set with `ulDevSetConfig()` and read with `ulDevGetConfig()` | uldaq-env issues 2 and 3; no upstream pull request or commit is recorded |
 
 ## Rules of this repository
 
